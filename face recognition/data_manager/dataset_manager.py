@@ -76,7 +76,7 @@ class DataEngineTypical(MainEngineClass):
 
 		if map_to:
 			self.dataset = self.dataset.map(self.mapper, num_parallel_calls=tf.data.experimental.AUTOTUNE)
-		self.dataset = self.dataset.batch(batch_size)
+		self.dataset = self.dataset.batch(batch_size, drop_remainder=True)
 
 		if test_batch > 0:
 			self.dataset_test = self.dataset.take(int(test_batch))
@@ -114,7 +114,7 @@ class DataEngineTFRecord(MainEngineClass):
 
 		if map_to:
 			self.dataset = self.dataset.map(self.mapper, num_parallel_calls=tf.data.experimental.AUTOTUNE)
-		self.dataset = self.dataset.batch(batch_size)
+		self.dataset = self.dataset.batch(batch_size, drop_remainder=True)
 
 
 		if test_batch > 0:
