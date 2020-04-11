@@ -4,6 +4,10 @@ This is a sub-field of liyana face analysis project. Under this title, we intend
 
 
 
+![](https://i.ibb.co/26ZRX8q/sv2.png)
+
+
+
 ## [Classifier Trainer](train_classifier.py)
 
 ### General

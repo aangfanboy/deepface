@@ -44,8 +44,9 @@ class DataEngineTypical(MainEngineClass):
 
 	def path_yielder(self):
 		for class_name in tf.io.gfile.listdir(self.main_path):
-			for path_only in tf.io.gfile.listdir(self.main_path+class_name):
-				yield (self.main_path+class_name+"/"+path_only, self.label_map[class_name])
+			if not "tfrecords" in class_name:
+				for path_only in tf.io.gfile.listdir(self.main_path+class_name):
+					yield (self.main_path+class_name+"/"+path_only, self.label_map[class_name])
 
 	def image_loader(self, image):
 		image = tf.io.read_file(image)
@@ -58,22 +59,30 @@ class DataEngineTypical(MainEngineClass):
 	def mapper(self, path, label):
 		return (self.image_loader(path), label)
 
-	def __init__(self, main_path: str, batch_size: int = 16, buffer_size: int = 10000, epochs: int = 1, reshuffle_each_iteration: bool = False, test_batch = 64):
+	def __init__(self, main_path: str, batch_size: int = 16, buffer_size: int = 10000, epochs: int = 1, reshuffle_each_iteration: bool = False, test_batch = 64,
+		map_to: bool = True):
 		super(DataEngineTypical, self).__init__()
 		self.main_path = main_path.rstrip("/") + "/"
 		self.make_label_map()
 
-		reshuffle_each_iteration = False
-		print(f"reshuffle_each_iteration set to False to create a appropriate test set, this may cancelled if tf.data will fixed.")
+		self.dataset_test = None
+		if test_batch > 0:
+			reshuffle_each_iteration = False
+			print(f"[*] reshuffle_each_iteration set to False to create a appropriate test set, this may cancelled if tf.data will fixed.")
 
 		self.dataset = tf.data.Dataset.from_generator(self.path_yielder, (tf.string, tf.int64))
 		if buffer_size > 0:
 			self.dataset = self.dataset.shuffle(buffer_size, reshuffle_each_iteration=reshuffle_each_iteration, seed=42)
 
-		self.dataset = self.dataset.map(self.mapper, num_parallel_calls=tf.data.experimental.AUTOTUNE).batch(batch_size).repeat(epochs)
+		if map_to:
+			self.dataset = self.dataset.map(self.mapper, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+		self.dataset = self.dataset.batch(batch_size)
 
-		self.dataset_test = self.dataset.take(int(test_batch))
-		self.dataset = self.dataset.skip(int(test_batch))
+		if test_batch > 0:
+			self.dataset_test = self.dataset.take(int(test_batch))
+			self.dataset = self.dataset.skip(int(test_batch))
+
+		self.dataset = self.dataset.repeat(epochs)
 
 
 class DataEngineTFRecord(MainEngineClass):
@@ -90,21 +99,30 @@ class DataEngineTFRecord(MainEngineClass):
 		return self.image_loader(features['image_raw']),  tf.cast(features['label'], tf.int64)
 
 	def __init__(self, tf_record_path: str, batch_size: int = 16, epochs: int = 10, buffer_size: int = 50000, reshuffle_each_iteration: bool = True,
-	 test_batch = 64):
+	 test_batch = 64, map_to: bool = True):
 		super(DataEngineTFRecord, self).__init__()
-
-		reshuffle_each_iteration = False
-		print(f"reshuffle_each_iteration set to False to create a appropriate test set, this may cancelled if tf.data will fixed.")
+		
+		self.dataset_test = None
+		if test_batch > 0:
+			reshuffle_each_iteration = False
+			print(f"[*] reshuffle_each_iteration set to False to create a appropriate test set, this may cancelled if tf.data will fixed.")
 		self.tf_record_path = tf_record_path
 
 		self.dataset = tf.data.TFRecordDataset(self.tf_record_path)
 		if buffer_size > 0:
 			self.dataset = self.dataset.shuffle(buffer_size, reshuffle_each_iteration=reshuffle_each_iteration, seed=42)
 
-		self.dataset = self.dataset.map(self.mapper, num_parallel_calls=tf.data.experimental.AUTOTUNE).batch(batch_size).repeat(epochs)
+		if map_to:
+			self.dataset = self.dataset.map(self.mapper, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+		self.dataset = self.dataset.batch(batch_size)
 
-		self.dataset_test = self.dataset.take(int(test_batch))
-		self.dataset = self.dataset.skip(int(test_batch))
+
+		if test_batch > 0:
+			self.dataset_test = self.dataset.take(int(test_batch))
+			self.dataset = self.dataset.skip(int(test_batch))
+
+		self.dataset = self.dataset.repeat(epochs)
+
 
 if __name__ == '__main__':
 	print("go check README.md")

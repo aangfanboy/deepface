@@ -25,12 +25,15 @@ class Trainer:
 			create_model=False
 		)
 
-		self.model_engine.model = tf.keras.models.load_model(path_for_pretrained_arcface_wolast_model)
-		self.model_engine.model = tf.keras.models.Model([self.model_engine.model.layers[0].input, tf.keras.layers.Input((None, ))],
-		 [self.model_engine.model.layers[-3].output, self.model_engine.model.layers[-3].output])
+		if tf.io.gfile.exists(self.model_path):
+			self.model_engine.model = tf.keras.models.load_model(self.model_path)
+		else:
+			self.model_engine.model = tf.keras.models.load_model(path_for_pretrained_arcface_wolast_model)
+			self.model_engine.model = tf.keras.models.Model([self.model_engine.model.layers[0].input, tf.keras.layers.Input((None, ))],
+			 [self.model_engine.model.layers[-3].output, self.model_engine.model.layers[-3].output])
 
 		self.tensorboard_engine.initialize(
-			delete_if_exists=True
+			delete_if_exists=False
 		)
 
 	def __call__(self, max_iteration: int = None, alfa_step=1000):
@@ -64,11 +67,12 @@ class Trainer:
 
 if __name__ == '__main__':
 	TDOM = DSM.DataEngineTFRecord(
-		"../datasets/faces_casia/tran.tfrecords", 
+		"../datasets/faces_emore/tran.tfrecords", 
 		batch_size = 64, 
 		epochs = 1, 
 		buffer_size = 20000,  
-		reshuffle_each_iteration = False
+		reshuffle_each_iteration = False,
+		test_batch=0
 	)  # TDO for "Tensorflow Dataset Object Manager"
 	TDOM.create_triplet_loss_dataset()
 
@@ -82,11 +86,11 @@ if __name__ == '__main__':
 		model_engine=ME,
 		dataset_engine=TDOM,
 		tensorboard_engine=TBE,
-		learning_rate=0.01,
+		learning_rate=0.005,
 		model_path="triplet_model.h5",
-		path_for_pretrained_arcface_wolast_model="classifier_model.h5"
+		path_for_pretrained_arcface_wolast_model="ResNet50LastClassifier.h5"
 		)
 
 	trainer(
-		max_iteration=None
+		max_iteration=30000
 	)

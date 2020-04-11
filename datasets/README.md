@@ -18,6 +18,8 @@
 
 ## Validation Datasets
 
+
+
 ### 	Pins Face Recognition
 
 ​			Aligned from [here](https://www.kaggle.com/hereisburak/pins-face-recognition), can be downloaded from [here](https://drive.google.com/open?id=1fmCH9K6pL-iDbc_ds8iQUtMV0mGV2Fcu).
@@ -25,6 +27,16 @@
 ### 	Labeled Faces in the Wild(LFW) 
 
 ​			Aligned to 112x112, can be downloaded from [google drive](https://drive.google.com/file/d/1WO5Meh_yAau00Gm2Rz2Pc0SRldLQYigT/view)
+
+### AgeDB
+
+​			Aligned to 112x112, can be downloaded from [google drive](https://drive.google.com/file/d/1AoZrZfym5ZhdTyKSxD0qxa7Xrp2Q1ftp/view)
+
+### Celebrities in Frontal-Profile in the Wild(CFP)
+
+​			Aligned to 112x112, can be downloaded from [google drive](https://drive.google.com/file/d/1-sDn79lTegXRNhFuRnIRsgdU88cBfW6V/view)		
+
+  
 
 
 
@@ -36,8 +48,12 @@
 
 
 
-> Except _pins face recognition_, those datasets are taken from [here](https://github.com/deepinsight/insightface/wiki/Dataset-Zoo). For more datasets, please visit. 
+> Except **_DFDC Dataset V4_**, training datasets are taken from [here](https://github.com/deepinsight/insightface/wiki/Dataset-Zoo). For more datasets, please visit.
 
 
 
-> I'm grateful to [Zemana](https://www.zemana.com/) for sharing DFDC Dataset V4 with me.
+> Except **_pins face recognition_**, validation datasets are taken from [here](https://github.com/peteryuX/arcface-tf2#testing-dataset). For more datasets, please visit. 
+
+
+
+> I'm grateful to [Zemana](https://www.zemana.com/) for sharing **_DFDC Dataset V4_** with me.

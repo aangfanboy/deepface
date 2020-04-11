@@ -36,7 +36,7 @@ def conv2d_bn(x,
     if not use_bias:
         bn_axis = 1 if K.image_data_format() == 'channels_first' else 3
         bn_name = _generate_layer_name('BatchNorm', prefix=name)
-        x = BatchNormalization(axis=bn_axis, momentum=0.995, epsilon=0.001,
+        x = BatchNormalization(axis=bn_axis, momentum=0.9, epsilon=0.001,
                                scale=False, name=bn_name)(x)
     if activation is not None:
         ac_name = _generate_layer_name('Activation', prefix=name)

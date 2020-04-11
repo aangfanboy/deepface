@@ -5,6 +5,17 @@ from model_scripts import inception_resnet_v1
 from model_scripts.ArcFaceLayer import ArcFaceLayer
 
 
+class BatchNormalization(tf.keras.layers.BatchNormalization):
+	"""Make trainable=False freeze BN for real (the og version is sad).
+	   ref: https://github.com/zzh8829/yolov3-tf2
+	"""
+	def call(self, x, training=False):
+		if training is None:
+			training = tf.constant(False)
+		training = tf.logical_and(training, self.trainable)
+		return super().call(x, training)
+
+
 class MainModel:
 	@staticmethod
 	def triplet_loss_test(_, output):
@@ -57,8 +68,18 @@ class MainModel:
 
 		return logits, features, loss, reg_loss
 
+	def softmax_loss(self, y_true, y_pred):
+		return tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(labels=tf.cast(tf.reshape(y_true, [-1]), tf.int64), logits=y_pred))
+
+	def change_learning_rate_of_optimizer(self, new_lr: float):
+		self.optimizer.learning_rate = new_lr
+		self.last_lr = new_lr
+		
+		return True
+
 	def __init__(self):
-		self.loss_function = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
+		self.loss_function = self.softmax_loss
+		self.last_lr = None
 
 	@tf.function
 	def train_step(self, x, y):
@@ -78,10 +99,21 @@ class MainModel:
 
 		return logits, features, loss
 
-	def __call__(self, input_shape, weights: str = None, num_classes: int = 10, learning_rate: float = 0.1, regularizer_l: float = 5e-4,
+	def turn_softmax_into_arcface(self, num_classes: int):
+		label_input_layer = tf.keras.layers.Input((None, ), dtype=tf.int64)
+
+		x = ArcFaceLayer(num_classes=num_classes, name="arcfaceLayer")(self.model.layers[-3].output, label_input_layer)
+
+		self.model = tf.keras.models.Model([self.model.layers[0].input, label_input_layer], [x, self.model.layers[-3].output])
+		self.model.summary()
+
+	def __call__(self, input_shape, weights: str = None, num_classes: int = 10, learning_rate: float = 0.1, regularizer_l: float = 5e-4, weight_path: str = None,
 	 pooling_layer: tf.keras.layers.Layer = tf.keras.layers.GlobalAveragePooling2D, create_model: bool = True, use_arcface: bool = True):
 
-		self.optimizer = tf.keras.optimizers.SGD(learning_rate=learning_rate, momentum=0.9, nesterov=True)
+		self.last_lr = learning_rate
+		self.optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate, beta_1=0.9, beta_2=0.999, epsilon=0.1)
+		# self.optimizer = tf.keras.optimizers.SGD(learning_rate=learning_rate, momentum=0.9)
+		# self.optimizer = tf.compat.v1.train.MomentumOptimizer(learning_rate=learning_rate, momentum=0.9)
 
 		if create_model:
 			label_input_layer = tf.keras.layers.Input((None, ), dtype=tf.int64)
@@ -92,21 +124,27 @@ class MainModel:
 				layer.kernel_regularizer = tf.keras.regularizers.l2(5e-4)
 
 			self.model = tf.keras.models.model_from_json(self.model.to_json())  # To apply regularizers
-			x = pooling_layer()(self.model.layers[-1].output)
 			# ACCORDING TO ARCFACE PAPER
-			x = tf.keras.layers.BatchNormalization(epsilon=2e-5, momentum=0.9)(x)
+			x = BatchNormalization(epsilon=2e-5, momentum=0.9)(self.model.layers[-1].output)
 			x = tf.keras.layers.Dropout(0.4)(x)
-			x = tf.keras.layers.Dense(512, activation=None, name="features_without_bn", kernel_regularizer=tf.keras.regularizers.l2(5e-4))(x)
-			x1 = tf.keras.layers.BatchNormalization(epsilon=2e-5, momentum=0.9)(x)
+			x = pooling_layer()(x)
+			x1 = tf.keras.layers.Dense(512, activation=None, name="features_without_bn", kernel_regularizer=tf.keras.regularizers.l2(5e-4))(x)
+			x = BatchNormalization(epsilon=2e-5, momentum=0.9)(x1)
 
 			if  use_arcface:
-				x = ArcFaceLayer(num_classes=num_classes, name="arcfaceLayer")(x1, label_input_layer)
+				x = ArcFaceLayer(num_classes=num_classes, name="arcfaceLayer")(x, label_input_layer)
 			else:
-				x = tf.keras.layers.Dense(num_classes, activation=None, kernel_regularizer=tf.keras.regularizers.l2(5e-4))(x1)
+				x = tf.keras.layers.Dense(num_classes, activation=None, kernel_regularizer=tf.keras.regularizers.l2(5e-4))(x)
 
 			self.model = tf.keras.models.Model([self.model.layers[0].input, label_input_layer], [x, x1], name=f"{self.__name__}-ArcFace")
-
 			self.model.summary()
+
+			try:
+				self.model.load_weights(weight_path)
+				print("[*] WEIGHTS FOUND FOR MODEL, LOADING...")
+			except Exception as e:
+				print(e)
+				print("[*] THERE IS NO WEIGHT FILE FOR MODEL, INITIALIZING...")
 
 
 class ResNet50(MainModel):
