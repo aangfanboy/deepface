@@ -179,7 +179,7 @@ class Trainer:
 					acc_mean.reset_states()
 					loss_mean.reset_states()
 
-				if i % alfa_multiplied_ten == 0 and self.use_arcface:
+				if i % alfa_multiplied_ten == 0 and self.use_arcface and i > 10:
 					self.test_on_val_data(i, alfa_multiplied_ten)
 
 				if max_iteration is not None and i >= max_iteration:
