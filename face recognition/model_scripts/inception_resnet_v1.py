@@ -13,6 +13,7 @@ from tensorflow.keras.layers import Lambda
 from tensorflow.keras.layers import MaxPooling2D
 from tensorflow.keras.layers import add
 from tensorflow.keras import backend as K
+import tensorflow as tf
 
 
 def scaling(x, scale):
@@ -36,11 +37,12 @@ def conv2d_bn(x,
     if not use_bias:
         bn_axis = 1 if K.image_data_format() == 'channels_first' else 3
         bn_name = _generate_layer_name('BatchNorm', prefix=name)
-        x = BatchNormalization(axis=bn_axis, momentum=0.9, epsilon=0.001,
+        x = BatchNormalization(axis=bn_axis, momentum=0.9, epsilon=2e-5,
                                scale=False, name=bn_name)(x)
     if activation is not None:
         ac_name = _generate_layer_name('Activation', prefix=name)
-        x = Activation(activation, name=ac_name)(x)
+        # x = Activation(activation, name=ac_name)(x)
+        x = tf.keras.layers.PReLU(name=ac_name)(x)
     return x
 
 
@@ -97,7 +99,8 @@ def _inception_resnet_block(x, scale, block_type, block_idx, activation='relu'):
                 arguments={'scale': scale})(up)
     x = add([x, up])
     if activation is not None:
-        x = Activation(activation, name=name_fmt('Activation'))(x)
+        # x = Activation(activation, name=name_fmt('Activation'))(x)
+        x = tf.keras.layers.PReLU(name=name_fmt('Activation'))(x)
     return x
 
 

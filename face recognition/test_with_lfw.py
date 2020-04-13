@@ -25,6 +25,13 @@ def get_val_pair(path, name):
     return carray, issame
 
 
+def get_lfw_data(data_path):
+    """get validation data"""
+    lfw, lfw_issame = get_val_pair(data_path, 'lfw_align_112/lfw')
+
+    return lfw, lfw_issame
+
+
 def get_val_data(data_path):
     """get validation data"""
     lfw, lfw_issame = get_val_pair(data_path, 'lfw_align_112/lfw')

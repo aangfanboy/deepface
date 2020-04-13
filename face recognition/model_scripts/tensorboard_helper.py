@@ -28,6 +28,11 @@ class TensorBoardCallback:
 
 		self.initial_step += 1
 
+	def add_with_step(self, data_json: dict, description: str = None, step: int = 0):
+		with self.file_writer.as_default():
+			for key in data_json:
+				tf.summary.scalar(key, data_json[key], step=step, description=description)
+
 	def add_text(self, name: str, data: str, step: int, **kwargs):
 		with self.file_writer.as_default():
 			tf.summary.text(name, data, step=step)

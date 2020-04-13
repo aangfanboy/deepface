@@ -4,7 +4,7 @@ from data_manager import dataset_manager as DSM
 from model_scripts import tensorboard_helper as TBH
 from model_scripts import main_model_architect as MMA
 
-from test_with_lfw import get_val_data, perform_val_arcface
+from test_with_lfw import get_val_data, get_lfw_data, perform_val_arcface
 
 
 class Trainer:
@@ -14,7 +14,7 @@ class Trainer:
 
 	@staticmethod
 	def calculate_accuracy(y_real, y_pred):
-		return tf.reduce_mean(tf.cast(tf.equal(tf.argmax(tf.nn.softmax(y_pred), -1), y_real), tf.float32))
+		return tf.reduce_mean(tf.cast(tf.equal(tf.argmax(tf.nn.softmax(y_pred), axis=1), y_real), dtype=tf.float32))
 
 	def only_test(self, dataset_test = None, display_wrong_images: bool = False):
 		if dataset_test is None:
@@ -53,7 +53,8 @@ class Trainer:
 
 
 	def __init__(self, model_engine: MMA, dataset_engine: DSM, tensorboard_engine: TBH, use_arcface: bool, learning_rate: float = 0.01,
-	 model_path: str = "classifier_model.tf", pooling_layer: tf.keras.layers.Layer = tf.keras.layers.GlobalAveragePooling2D, lr_step_dict: dict = None):
+	 model_path: str = "classifier_model.tf", pooling_layer: tf.keras.layers.Layer = tf.keras.layers.GlobalAveragePooling2D, lr_step_dict: dict = None,
+	 optimizer: str = "ADAM"):
 		self.model_path = model_path
 		self.model_engine = model_engine
 		self.dataset_engine = dataset_engine
@@ -61,13 +62,14 @@ class Trainer:
 		self.use_arcface = use_arcface
 		self.lr_step_dict = lr_step_dict
 
-		self.num_classes = 10575  # 85742 for MS1MV2, 10575 for Casia, 105 for MINE
+		self.num_classes = 85742  # 85742 for MS1MV2, 10575 for Casia, 105 for MINE
 
 		qqq = tf.io.gfile.exists(self.model_path)
 
 		self.tb_delete_if_exists = True
 		if self.use_arcface:
-			self.lfw, self.agedb_30, self.cfp_fp, self.lfw_issame, self.agedb_30_issame, self.cfp_fp_issame = get_val_data("../datasets/")
+			# self.lfw, self.agedb_30, self.cfp_fp, self.lfw_issame, self.agedb_30_issame, self.cfp_fp_issame = get_val_data("../datasets/")
+			self.lfw, self.lfw_issame = get_lfw_data("../datasets/")
 
 		if qqq:
 			try:
@@ -92,19 +94,28 @@ class Trainer:
 			create_model=not qqq,
 			use_arcface=self.use_arcface,
 			weight_path=self.model_path,
+			optimizer=optimizer
 		)
 
-	def test_on_val_data(self, is_ccrop: bool = False):
+	def test_on_val_data(self, is_ccrop: bool = False, step_i: int = 1, alfa_multiplied_ten: int = 1):
+		step = int(alfa_multiplied_ten/step_i)
+
 		print("-----------------------------------")
-		acc, best_th = perform_val_arcface(512, 32, self.model_engine.model, self.lfw, self.lfw_issame, is_ccrop=is_ccrop)
-		print(f"[*] Results on LFW, Accuracy --> {acc} || Best Threshold --> {best_th}")
+		acc_lfw, best_th = perform_val_arcface(512, 16, self.model_engine.model, self.lfw, self.lfw_issame, is_ccrop=is_ccrop)
+		print(f"[*] Results on LFW, Accuracy --> {acc_lfw} || Best Threshold --> {best_th}")
 		print("-----------------------------------")
-		acc, best_th = perform_val_arcface(512, 32, self.model_engine.model, self.agedb_30, self.agedb_30_issame, is_ccrop=is_ccrop)
-		print(f"[*] Results on AgeDB 30, Accuracy --> {acc} || Best Threshold --> {best_th}")
+
+		"""
+		acc_agedb, best_th = perform_val_arcface(512, 16, self.model_engine.model, self.agedb_30, self.agedb_30_issame, is_ccrop=is_ccrop)
+		print(f"[*] Results on AgeDB 30, Accuracy --> {acc_agedb} || Best Threshold --> {best_th}")
 		print("-----------------------------------")
-		acc, best_th = perform_val_arcface(512, 32, self.model_engine.model, self.cfp_fp, self.cfp_fp_issame, is_ccrop=is_ccrop)
-		print(f"[*] Results on CFP, Accuracy --> {acc} || Best Threshold --> {best_th}")
+		acc_cpf, best_th = perform_val_arcface(512, 16, self.model_engine.model, self.cfp_fp, self.cfp_fp_issame, is_ccrop=is_ccrop)
+		print(f"[*] Results on CFP, Accuracy --> {acc_cpf} || Best Threshold --> {best_th}")
 		print("-----------------------------------")
+
+		self.tensorboard_engine.add_with_step({"LFW": acc_lfw, "AgeDB": acc_agedb, "CFP": acc_cpf}, step=step)
+		"""
+		self.tensorboard_engine.add_with_step({"LFW": acc_lfw}, step=step)
 
 
 	def __call__(self, max_iteration: int = None, alfa_step=1000):
@@ -131,7 +142,7 @@ class Trainer:
 			self.tensorboard_engine({"loss": loss, "reg_loss": reg_loss, "accuracy": accuracy})
 
 			if i % alfa_divided_ten == 0:
-				if i % alfa_step == 0:
+				if i % alfa_step == 0 and i > 10:
 					self.model_engine.model.save_weights(self.model_path)
 					print(f"[{i}] Model saved to {self.model_path}")
 
@@ -154,7 +165,7 @@ class Trainer:
 						print(f"[{i}] Model saved to {self.model_path}, end of training.")
 						break
 
-				if i % alfa_multiplied_ten == 0 and self.dataset_engine.dataset_test is not None:
+				if i % alfa_multiplied_ten == 0 and self.dataset_engine.dataset_test is not None and i > 10:
 					for x, y in self.dataset_engine.dataset_test:
 						logits, features, loss, reg_loss = self.model_engine.test_step_reg(x, y)
 						accuracy = self.calculate_accuracy(y, logits)
@@ -169,7 +180,7 @@ class Trainer:
 					loss_mean.reset_states()
 
 				if i % alfa_multiplied_ten == 0 and self.use_arcface:
-					self.test_on_val_data()
+					self.test_on_val_data(i, alfa_multiplied_ten)
 
 				if max_iteration is not None and i >= max_iteration:
 					print(f"[{i}] Reached to given maximum iteration({max_iteration})")
@@ -185,11 +196,11 @@ class Trainer:
 
 if __name__ == '__main__':
 	TDOM = DSM.DataEngineTFRecord(
-		"../datasets/faces_casia/tran.tfrecords",  # 105_classes_pins_dataset_aligned
+		"../datasets/faces_emore/tran.tfrecords",  # 105_classes_pins_dataset_aligned
 		batch_size = 16, 
 		epochs = -1, 
 		buffer_size = 10000,  
-		reshuffle_each_iteration = False,
+		reshuffle_each_iteration = True,
 		test_batch=0
 	)  # TDO for "Tensorflow Dataset Object Manager"
 
@@ -197,21 +208,21 @@ if __name__ == '__main__':
 		logdir="classifier_tensorboard"
 	)  # TBE for TensorBoard Engine
 
-	ME = MMA.ResNet50()  # ME for "Model Engine"
+	ME = MMA.InceptionResNetV1()  # ME for "Model Engine"
 
 	trainer = Trainer(
 		model_engine=ME,
 		dataset_engine=TDOM,
 		tensorboard_engine=TBE,
-		use_arcface=False,
+		use_arcface=True,
 		learning_rate=0.001,
-		model_path="classifier_model/classifier_model.tf",
+		model_path="classifier_model/model.tf",
+		optimizer="MOMENTUM",
+		lr_step_dict = {
+			40000*32: 0.001,
+			60000*32: 0.0005,
+			80000*32: 0.0003,
+			100000*32: 0.0001,
+		}
 		)
-	trainer.model_engine.turn_softmax_into_arcface(trainer.num_classes)
-	trainer(100000, alfa_step=5000)
-
-	"""
-	mm = tf.keras.models.Model(trainer.model_engine.model.layers[0].input, trainer.model_engine.model.layers[-3].output)
-	mm.summary()
-
-	mm.save("a_model.h5")"""
+	trainer(-1, alfa_step=5000)

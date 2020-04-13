@@ -69,7 +69,7 @@ class MainModel:
 		return logits, features, loss, reg_loss
 
 	def softmax_loss(self, y_true, y_pred):
-		return tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(labels=tf.cast(tf.reshape(y_true, [-1]), tf.int64), logits=y_pred))
+		return tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(logits=y_pred, labels=y_true))
 
 	def change_learning_rate_of_optimizer(self, new_lr: float):
 		self.optimizer.learning_rate = new_lr
@@ -108,12 +108,22 @@ class MainModel:
 		self.model.summary()
 
 	def __call__(self, input_shape, weights: str = None, num_classes: int = 10, learning_rate: float = 0.1, regularizer_l: float = 5e-4, weight_path: str = None,
-	 pooling_layer: tf.keras.layers.Layer = tf.keras.layers.GlobalAveragePooling2D, create_model: bool = True, use_arcface: bool = True):
+	 pooling_layer: tf.keras.layers.Layer = tf.keras.layers.GlobalAveragePooling2D, create_model: bool = True, use_arcface: bool = True, 
+	 optimizer = "ADAM"):
 
 		self.last_lr = learning_rate
-		self.optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate, beta_1=0.9, beta_2=0.999, epsilon=0.1)
-		# self.optimizer = tf.keras.optimizers.SGD(learning_rate=learning_rate, momentum=0.9)
-		# self.optimizer = tf.compat.v1.train.MomentumOptimizer(learning_rate=learning_rate, momentum=0.9)
+
+		if optimizer == "ADAM":
+			self.optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate, beta_1=0.9, beta_2=0.999, epsilon=0.1)
+			print("[*] ADAM chosen as optimizer")
+		elif optimizer == "SGD":
+			self.optimizer = tf.keras.optimizers.SGD(learning_rate=learning_rate, momentum=0.9)
+			print("[*] SGD chosen as optimizer")
+		elif optimizer == "MOMENTUM":
+			self.optimizer = tf.compat.v1.train.MomentumOptimizer(learning_rate=learning_rate, momentum=0.9)
+			print("[*] MomentumOptimizer chosen as optimizer")
+		else:
+			raise Exception(f"{optimizer} is not a valid name! Go with either ADAM, SGD or MOMENTUM")
 
 		if create_model:
 			label_input_layer = tf.keras.layers.Input((None, ), dtype=tf.int64)
@@ -121,14 +131,21 @@ class MainModel:
 			self.model.trainable=True
 			
 			for layer in self.model.layers:
-				layer.kernel_regularizer = tf.keras.regularizers.l2(5e-4)
+				if "Conv" in str(layer):
+					layer.kernel_regularizer = tf.keras.regularizers.l2(5e-4)
+
+				elif "BatchNorm" in str(layer):
+					layer.gamma_regularizer = tf.keras.regularizers.l2(5e-4)
+
+				elif "PReLU" in str(layer):
+					layer.alpha_regularizer = tf.keras.regularizers.l2(5e-4)
 
 			self.model = tf.keras.models.model_from_json(self.model.to_json())  # To apply regularizers
 			# ACCORDING TO ARCFACE PAPER
-			x = BatchNormalization(epsilon=2e-5, momentum=0.9)(self.model.layers[-1].output)
+			x = pooling_layer()(self.model.layers[-1].output)
+			x = BatchNormalization(epsilon=2e-5, momentum=0.9)(x)
 			x = tf.keras.layers.Dropout(0.4)(x)
-			x = pooling_layer()(x)
-			x1 = tf.keras.layers.Dense(512, activation=None, name="features_without_bn", kernel_regularizer=tf.keras.regularizers.l2(5e-4))(x)
+			x1 = tf.keras.layers.Dense(512, activation=None, name="features_without_bn", kernel_regularizer=tf.keras.regularizers.l2(5e-4), use_bias=False)(x)
 			x = BatchNormalization(epsilon=2e-5, momentum=0.9)(x1)
 
 			if  use_arcface:

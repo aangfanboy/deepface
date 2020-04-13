@@ -88,6 +88,7 @@ class DataEngineTypical(MainEngineClass):
 class DataEngineTFRecord(MainEngineClass):
 	def image_loader(self, image_raw):
 		image = tf.image.decode_jpeg(image_raw, channels=3)
+		image = tf.image.resize(image, (112, 112), method="nearest")
 		image = tf.image.random_flip_left_right(image)
 
 		return (tf.cast(image, tf.float32) - 127.5) / 128.
