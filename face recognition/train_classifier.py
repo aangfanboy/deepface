@@ -63,6 +63,7 @@ class Trainer:
 		self.lr_step_dict = lr_step_dict
 
 		self.num_classes = 85742  # 85742 for MS1MV2, 10575 for Casia, 105 for MINE
+		tf.io.gfile.makedirs("/".join(self.model_path.split("/")[:-1]))
 
 		qqq = tf.io.gfile.exists(self.model_path)
 
@@ -77,7 +78,7 @@ class Trainer:
 				self.tb_delete_if_exists = False
 
 				print(f"[*] Model loaded from {self.model_path}")
-			except:
+			except Exception as e:
 				qqq = not qqq
 
 		if self.lr_step_dict is not None:
@@ -138,6 +139,8 @@ class Trainer:
 		for i, (x, y) in enumerate(self.dataset_engine.dataset):
 			logits, features, loss, reg_loss = self.model_engine.train_step_reg(x, y)
 			accuracy = self.calculate_accuracy(y, logits)
+			acc_mean(accuracy)
+			loss_mean(loss)
 
 			self.tensorboard_engine({"loss": loss, "reg_loss": reg_loss, "accuracy": accuracy})
 
@@ -146,7 +149,9 @@ class Trainer:
 					self.model_engine.model.save_weights(self.model_path)
 					print(f"[{i}] Model saved to {self.model_path}")
 
-				print(f"[{i}] Loss: {round(loss.numpy(), 4)} || Reg Loss: {reg_loss.numpy()} || Accuracy: %{accuracy.numpy()} || LR: {self.model_engine.last_lr}")
+				print(f"[{i}] Loss: {loss_mean.result().numpy()} || Reg Loss: {reg_loss.numpy()} || Accuracy: %{acc_mean.result().numpy()} || LR: {self.model_engine.optimizer.learning_rate.numpy()}")
+				acc_mean.reset_states()
+				loss_mean.reset_states()
 				if self.lr_step_dict is not None:
 					lower_found = False
 					for key in self.lr_step_dict:
@@ -196,7 +201,7 @@ class Trainer:
 
 if __name__ == '__main__':
 	TDOM = DSM.DataEngineTFRecord(
-		"../datasets/faces_emore/tran.tfrecords",  # 105_classes_pins_dataset_aligned
+		"../datasets/mnist/tran.tfrecords",  # 105_classes_pins_dataset_aligned
 		batch_size = 16, 
 		epochs = -1, 
 		buffer_size = 10000,  
@@ -208,7 +213,7 @@ if __name__ == '__main__':
 		logdir="classifier_tensorboard"
 	)  # TBE for TensorBoard Engine
 
-	ME = MMA.InceptionResNetV1()  # ME for "Model Engine"
+	ME = MMA.ResNet50()  # ME for "Model Engine"
 
 	trainer = Trainer(
 		model_engine=ME,
@@ -216,13 +221,14 @@ if __name__ == '__main__':
 		tensorboard_engine=TBE,
 		use_arcface=True,
 		learning_rate=0.001,
-		model_path="classifier_model/model.tf",
-		optimizer="MOMENTUM",
+		model_path="classifier_model/model.h5",
+		optimizer="SGD",
 		lr_step_dict = {
-			40000*32: 0.001,
-			60000*32: 0.0005,
-			80000*32: 0.0003,
-			100000*32: 0.0001,
+		1000: 0.001,
+		2000: 0.001,
+		3000: 0.0001
 		}
+
 		)
-	trainer(-1, alfa_step=5000)
+
+	trainer(-1, 5000)

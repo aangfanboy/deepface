@@ -133,11 +133,11 @@ def perform_val_arcface(embedding_size, batch_size, model,
             batch = ccrop_batch(batch)
         if is_flip:
             fliped = hflip_batch(batch)
-            emb_batch = model([batch, tf.ones((batch.shape[0], ), dtype=tf.int64)])[-1] + model([batch, tf.ones((batch.shape[0], ), dtype=tf.int64)])[-1]
+            emb_batch = model([batch, tf.ones((batch.shape[0], ), dtype=tf.int64)], training=False)[-1] + model([batch, tf.ones((batch.shape[0], ), dtype=tf.int64)], training=False)[-1]
             embeddings[idx:idx + batch_size] = l2_norm(emb_batch)
         else:
             batch = ccrop_batch(batch)
-            emb_batch = model([batch, tf.ones((batch.shape[0], ), dtype=tf.int64)])[-1]
+            emb_batch = model([batch, tf.ones((batch.shape[0], ), dtype=tf.int64)], training=False)[-1]
             embeddings[idx:idx + batch_size] = l2_norm(emb_batch)
 
     tpr, fpr, accuracy, best_thresholds = evaluate(
@@ -158,11 +158,11 @@ def perform_val(embedding_size, batch_size, model,
             batch = ccrop_batch(batch)
         if is_flip:
             fliped = hflip_batch(batch)
-            emb_batch = model(batch) + model(fliped)
+            emb_batch = model(batch, training=False) + model(fliped, training=False)
             embeddings[idx:idx + batch_size] = l2_norm(emb_batch)
         else:
             batch = ccrop_batch(batch)
-            emb_batch = model(batch)
+            emb_batch = model(batch, training=False)
             embeddings[idx:idx + batch_size] = l2_norm(emb_batch)
 
     tpr, fpr, accuracy, best_thresholds = evaluate(

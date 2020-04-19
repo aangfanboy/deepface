@@ -74,6 +74,8 @@ class MainModel:
 	def change_learning_rate_of_optimizer(self, new_lr: float):
 		self.optimizer.learning_rate = new_lr
 		self.last_lr = new_lr
+
+		assert self.optimizer.learning_rate == self.optimizer.lr == self.last_lr
 		
 		return True
 
@@ -173,7 +175,7 @@ class ResNet50(MainModel):
 		super(ResNet50, self).__init__(**kwargs)
 
 	def get_model(self, input_shape, weights: str = None, **kwargs):
-		return tf.keras.applications.ResNet50(input_shape=input_shape, weights=weights, include_top=False)
+		return tf.keras.applications.ResNet50V2(input_shape=input_shape, weights=weights, include_top=False)
 
 
 class ResNet101(MainModel):
@@ -185,7 +187,19 @@ class ResNet101(MainModel):
 		super(ResNet101, self).__init__(**kwargs)
 
 	def get_model(self, input_shape, weights: str = None, **kwargs):
-		return tf.keras.applications.ResNet101(input_shape=input_shape, weights=weights, include_top=False)
+		return tf.keras.applications.ResNet101V2(input_shape=input_shape, weights=weights, include_top=False)
+
+
+class ResNet152(MainModel):
+	@property
+	def __name__(self):
+		return "ResNet101"
+
+	def __init__(self, **kwargs):
+		super(ResNet101, self).__init__(**kwargs)
+
+	def get_model(self, input_shape, weights: str = None, **kwargs):
+		return tf.keras.applications.ResNet152V2(input_shape=input_shape, weights=weights, include_top=False)
 
 
 class EfficientNetFamily(MainModel):
