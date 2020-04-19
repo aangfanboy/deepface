@@ -7,10 +7,14 @@ from face_detection.detector_main import MainHelper
 
 class Engine(MainHelper):
     def draw_faces_on_image(self, image, boxes, color=(255, 0, 0), thickness: int = 5):
-        for box in boxes:
+        if type(color) is not list:
+            cl = color
+            color = [cl for _ in range(len(boxes))]
+
+        for box, clr in zip(boxes, color):
             x1, y1, x2, y2 = box
-            color2g = color
-            if color == "different":
+            color2g = clr
+            if clr == "different":
                 color2g = self.generate_color()
 
             cv2.rectangle(image, (x1, y1), (x2, y2), color2g, thickness)
@@ -62,17 +66,10 @@ class Engine(MainHelper):
 if __name__ == '__main__':
     e = Engine()
 
-    """
-    image = e.load_image("test1.jpg")
+    image = e.load_image("test.jpg")
+
     faces = e.get_faces_from_image(image)
-    boxes = e.get_boxes_from_faces(faces, 0.9)
-    image = e.draw_faces_on_image(image, boxes, "different")
+    boxes = e.get_boxes_from_faces(faces)
+    image = e.draw_faces_on_image(image, boxes, color="different")
 
-    e.display_image(image)"""
-
-    for image in e.yield_video("test2.gif"):
-        faces = e.get_faces_from_image(image)
-        boxes = e.get_boxes_from_faces(faces, 0.9)
-        image = e.draw_faces_on_image(image, boxes, "different")
-
-        e.display_image(image, destroy_after=False, n=60)
+    e.display_image(image, destroy_after=False, n=0)
