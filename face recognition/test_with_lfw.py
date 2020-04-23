@@ -150,10 +150,12 @@ def perform_val(embedding_size, batch_size, model,
                 carray, issame, nrof_folds=10, is_ccrop=False, is_flip=True):
     """perform val"""
     embeddings = np.zeros([len(carray), embedding_size])
+    import cv2
 
     for idx in tqdm.tqdm(range(0, len(carray), batch_size)):
         batch = carray[idx:idx + batch_size]
-        batch = np.transpose(batch, [0, 2, 3, 1]) * 0.5 + 0.5
+        batch = np.transpose(batch, [0, 2, 3, 1])
+        batch = tf.convert_to_tensor([cv2.cvtColor(n, cv2.COLOR_BGR2RGB) for n in batch])
         if is_ccrop:
             batch = ccrop_batch(batch)
         if is_flip:
@@ -174,7 +176,7 @@ def perform_val(embedding_size, batch_size, model,
 if __name__ == '__main__':
     lfw, agedb_30, cfp_fp, lfw_issame, agedb_30_issame, cfp_fp_issame = get_val_data("../datasets/")
 
-    model_ai = tf.keras.models.load_model("a_model.h5")
+    model_ai = tf.keras.models.load_model("a_model_incep.h5")
 
     print("-----------------------------------")
     print("Testing on LFW...")

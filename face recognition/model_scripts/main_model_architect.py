@@ -75,7 +75,7 @@ class MainModel:
 		self.optimizer.learning_rate = new_lr
 		self.last_lr = new_lr
 
-		assert self.optimizer.learning_rate == self.optimizer.lr == self.last_lr
+		assert self.optimizer.learning_rate == self.optimizer.lr
 		
 		return True
 
@@ -132,28 +132,30 @@ class MainModel:
 			self.model = self.get_model(input_shape=input_shape, weights=weights)
 			self.model.trainable=True
 			
+			regularizer_l = 5e-4
+
 			for layer in self.model.layers:
 				if "Conv" in str(layer):
-					layer.kernel_regularizer = tf.keras.regularizers.l2(5e-4)
+					layer.kernel_regularizer = tf.keras.regularizers.l2(regularizer_l)
 
 				elif "BatchNorm" in str(layer):
-					layer.gamma_regularizer = tf.keras.regularizers.l2(5e-4)
+					layer.gamma_regularizer = tf.keras.regularizers.l2(regularizer_l)
 
 				elif "PReLU" in str(layer):
-					layer.alpha_regularizer = tf.keras.regularizers.l2(5e-4)
+					layer.alpha_regularizer = tf.keras.regularizers.l2(regularizer_l)
 
 			self.model = tf.keras.models.model_from_json(self.model.to_json())  # To apply regularizers
 			# ACCORDING TO ARCFACE PAPER
 			x = pooling_layer()(self.model.layers[-1].output)
 			x = BatchNormalization(epsilon=2e-5, momentum=0.9)(x)
 			x = tf.keras.layers.Dropout(0.4)(x)
-			x1 = tf.keras.layers.Dense(512, activation=None, name="features_without_bn", kernel_regularizer=tf.keras.regularizers.l2(5e-4), use_bias=False)(x)
-			x = BatchNormalization(epsilon=2e-5, momentum=0.9)(x1)
+			x1 = tf.keras.layers.Dense(512, activation=None, name="features_without_bn", use_bias=True, kernel_regularizer=tf.keras.regularizers.l2(regularizer_l))(x)
+			x = BatchNormalization(epsilon=2e-5, momentum=0.9, scale=False)(x1)
 
 			if  use_arcface:
 				x = ArcFaceLayer(num_classes=num_classes, name="arcfaceLayer")(x, label_input_layer)
 			else:
-				x = tf.keras.layers.Dense(num_classes, activation=None, kernel_regularizer=tf.keras.regularizers.l2(5e-4))(x)
+				x = tf.keras.layers.Dense(num_classes, activation=None)(x)
 
 			self.model = tf.keras.models.Model([self.model.layers[0].input, label_input_layer], [x, x1], name=f"{self.__name__}-ArcFace")
 			self.model.summary()

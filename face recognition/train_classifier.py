@@ -37,7 +37,7 @@ class Trainer:
 			acc_mean(accuracy)
 			loss_mean(loss)
 
-			print(f"[*] Step {i}, Accuracy --> %{accuracy} || Loss --> {loss}")
+			print(f"[*] Step {i}, Accuracy --> %{accuracy} || Loss --> {loss} || Reg Loss --> {reg_loss}")
 
 
 		if display_wrong_images and len(wrong_images) > 0:
@@ -62,7 +62,7 @@ class Trainer:
 		self.use_arcface = use_arcface
 		self.lr_step_dict = lr_step_dict
 
-		self.num_classes = 85742  # 85742 for MS1MV2, 10575 for Casia, 105 for MINE
+		self.num_classes = 10575  # 85742 for MS1MV2, 10575 for Casia, 105 for MINE
 		tf.io.gfile.makedirs("/".join(self.model_path.split("/")[:-1]))
 
 		qqq = tf.io.gfile.exists(self.model_path)
@@ -87,12 +87,12 @@ class Trainer:
 
 		self.model_engine(
 			input_shape=(112, 112, 3),
-			weights="imagenet", # "imagenet" or None
+			weights=None, # "imagenet" or None
 			num_classes=self.num_classes,  # 85742 for MS1MV2, 10575 for Casia, 105 for MINE
 			learning_rate=learning_rate,
 			regularizer_l=5e-4,
 			pooling_layer=pooling_layer,
-			create_model=not qqq,
+			create_model=True,
 			use_arcface=self.use_arcface,
 			weight_path=self.model_path,
 			optimizer=optimizer
@@ -119,12 +119,12 @@ class Trainer:
 		self.tensorboard_engine.add_with_step({"LFW": acc_lfw}, step=step)
 
 
-	def __call__(self, max_iteration: int = None, alfa_step=1000):
+	def __call__(self, max_iteration: int = None, alfa_step=1000, qin: int = 10):
 		if max_iteration is not None and max_iteration <= 0:
 			max_iteration = None
 
 		alfa_divided_ten = int(alfa_step/10)
-		alfa_multiplied_ten = int(alfa_step*10)
+		alfa_multiplied_ten = int(alfa_step*qin)
 
 		print(f"[*] Possible maximum step: {tf.data.experimental.cardinality(self.dataset_engine.dataset)}\n")
 
@@ -201,34 +201,35 @@ class Trainer:
 
 if __name__ == '__main__':
 	TDOM = DSM.DataEngineTFRecord(
-		"../datasets/mnist/tran.tfrecords",  # 105_classes_pins_dataset_aligned
+		"../datasets/faces_emore/tran.tfrecords",  # 105_classes_pins_dataset_aligned
 		batch_size = 16, 
 		epochs = -1, 
-		buffer_size = 10000,  
+		buffer_size = 30000,  
 		reshuffle_each_iteration = True,
 		test_batch=0
-	)  # TDO for "Tensorflow Dataset Object Manager"
+	)  # TDOM for "Tensorflow Dataset Object Manager"
 
 	TBE = TBH.TensorBoardCallback(
 		logdir="classifier_tensorboard"
-	)  # TBE for TensorBoard Engine
+	)  # TBE for "TensorBoard Engine"
 
 	ME = MMA.ResNet50()  # ME for "Model Engine"
 
+	k_value: float = 1.  # recommended --> (512 / TDOM.batch_size)
 	trainer = Trainer(
 		model_engine=ME,
 		dataset_engine=TDOM,
 		tensorboard_engine=TBE,
 		use_arcface=True,
-		learning_rate=0.001,
-		model_path="classifier_model/model.h5",
+		learning_rate=0.004,
+		model_path="ArcFaceModel/model.tf",
 		optimizer="SGD",
-		lr_step_dict = {
-		1000: 0.001,
-		2000: 0.001,
-		3000: 0.0001
+		lr_step_dict={
+			int(40000*k_value): 0.004,
+			int(60000*k_value): 0.0005,
+			int(80000*k_value): 0.0003,
+			int(120000*k_value): 0.0001,
 		}
+	)
 
-		)
-
-	trainer(-1, 5000)
+	trainer(max_iteration=-1, alfa_step=5000, qin=2)

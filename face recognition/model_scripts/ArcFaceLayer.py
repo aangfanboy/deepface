@@ -27,6 +27,7 @@ class ArcFaceLayer(tf.keras.layers.Layer):
 		embedding = tf.divide(features, embedding_norm, name='norm_embedding')
 		weights_norm = tf.norm(self.kernel, axis=0, keepdims=True)
 		weights = tf.divide(self.kernel, weights_norm, name='norm_weights')
+
 		# cos(theta+m)
 		cos_t = tf.matmul(embedding, weights, name='cos_t')
 		cos_t2 = tf.square(cos_t, name='cos_2')
@@ -52,7 +53,6 @@ class ArcFaceLayer(tf.keras.layers.Layer):
 		output = tf.add(tf.multiply(s_cos_t, inv_mask), tf.multiply(cos_mt_temp, mask), name='arcface_loss_output')
 
 		return output
-
 
 if __name__ == '__main__':
 	print("go check README.md")
