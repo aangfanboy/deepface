@@ -30,7 +30,7 @@ Get evaluation scores for LFW, AgeDB and CFP.
 
 | Model                                                        | ArcFace | Architecture                                              | Epochs | LFW Acc | AgeDB Acc | CFP Acc |
 | ------------------------------------------------------------ | ------- | --------------------------------------------------------- | ------ | ------- | --------- | ------- |
-| [A](https://drive.google.com/open?id=1VhUsdqVezrvflXjWSV_2hRxc94d6mLOU) | True    | [InceptionResNetV1](model_scripts/inception_resnet_v1.py) | 6      | %99.52  | %94.95    | %93.68  |
+| [A](https://drive.google.com/open?id=1V8rz_gabP2qnPrGJYwWTJX4U6vw0pxE-) | True    | [InceptionResNetV1](model_scripts/inception_resnet_v1.py) | 6      | %99.53  | %95.11    | %93.97  |
 
 
 
