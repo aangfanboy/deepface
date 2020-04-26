@@ -46,5 +46,4 @@ class MainHelper:
 
 if __name__ == '__main__':
 	e = MainHelper()
-
 	e.display_video("test2.gif")

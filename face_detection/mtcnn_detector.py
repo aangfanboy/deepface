@@ -62,7 +62,6 @@ if __name__ == '__main__':
 	e = Engine()
 
 	image = e.load_image("test.jpg")
-
 	faces = e.get_faces_from_image(image)
 	boxes = e.get_boxes_from_faces(faces)
 	image = e.draw_faces_on_image(image, boxes, color="different")
