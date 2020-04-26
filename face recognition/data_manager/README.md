@@ -1,6 +1,6 @@
 # All Data Management
 
-[dataset_manager.py](dataset_manager.py)
+## [Dataset_Manager](dataset_manager.py)
 
 ###   		General
 
@@ -14,26 +14,12 @@
 
 ### Classes
 
-- _MainEngineClass_
 - _DataEngineTypical_
 - _DataEngineTFRecord_
 
-### TODO
+### To Do
 
-* reshuffle_each_iteration set to be False in order to create a  appropriate test set, fix it
+- [ ] reshuffle_each_iteration set to be False in order to create a  appropriate test set, fix it
+- [ ] fix the _test_batch_ and make it a lambda function so it could change with batch size
+- [ ] find a way to do it without mxnet
 
-* make a better _get_triplet_examples_from_batch_ in order to better triplet selection
-
-* fix the _test_batch_ and make it a lambda function so it could change with batch size
-
-  
-
-
-
-[turn_idx2tfrecord.py](turn_idx2tfrecord.py)
-
-> This script modified for TensorFlow >= 2.0.0 from [here](https://github.com/auroua/InsightFace_TF/blob/master/data/mx2tfrecords.py).  
-
-### TODO
-
-* find a way to do it without mxnet
