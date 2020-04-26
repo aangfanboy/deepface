@@ -1,17 +1,9 @@
+# modified from https://github.com/davidsandberg/facenet/blob/master/src/models/inception_resnet_v1.py
+
 from functools import partial
 
 from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Activation
-from tensorflow.keras.layers import BatchNormalization
-from tensorflow.keras.layers import Concatenate
-from tensorflow.keras.layers import Conv2D
-from tensorflow.keras.layers import Dense
-from tensorflow.keras.layers import Dropout
-from tensorflow.keras.layers import GlobalAveragePooling2D
-from tensorflow.keras.layers import Input
-from tensorflow.keras.layers import Lambda
-from tensorflow.keras.layers import MaxPooling2D
-from tensorflow.keras.layers import add
+from tensorflow.keras.layers import BatchNormalization, Concatenate, Conv2D, Input, Lambda, MaxPooling2D, add
 from tensorflow.keras import backend as K
 import tensorflow as tf
 
@@ -54,7 +46,7 @@ def _generate_layer_name(name, branch_idx=None, prefix=None):
     return '_'.join((prefix, 'Branch', str(branch_idx), name))
 
 
-def _inception_resnet_block(x, scale, block_type, block_idx, activation='relu'):
+def _inception_resnet_block(x, scale, block_type, block_idx, activation: str = 'relu'):
     channel_axis = 1 if K.image_data_format() == 'channels_first' else 3
     if block_idx is None:
         prefix = None

@@ -16,16 +16,6 @@ Model can be trained with both _ArcFace_ head and _Softmax_ head. Parameters sup
 
 
 
-## [Triplet Loss Trainer](train_triplet.py)
-
-### General
-
-Model which trained with _ArcFace_ or _Softmax_, can be re-trained with triplet loss. Parameters supported with comments in Python file. 
-
-
-
-
-
 ## Model Informations
 
 

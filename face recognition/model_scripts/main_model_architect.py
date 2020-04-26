@@ -1,5 +1,5 @@
 import tensorflow as tf
-import efficientnet.tfkeras as efn 
+import efficientnet.tfkeras as efn
 
 from model_scripts import inception_resnet_v1
 from model_scripts.ArcFaceLayer import ArcFaceLayer
@@ -9,6 +9,7 @@ class BatchNormalization(tf.keras.layers.BatchNormalization):
 	"""Make trainable=False freeze BN for real (the og version is sad).
 	   ref: https://github.com/zzh8829/yolov3-tf2
 	"""
+
 	def call(self, x, training=False):
 		if training is None:
 			training = tf.constant(False)
@@ -17,33 +18,6 @@ class BatchNormalization(tf.keras.layers.BatchNormalization):
 
 
 class MainModel:
-	@staticmethod
-	def triplet_loss_test(_, output):
-		output = tf.nn.l2_normalize(output, 1, 1e-10)
-		anchor, positive, negative = tf.unstack(tf.reshape(output, (-1, 3, 512)), num=3, axis=1)
-
-		positive_dist = tf.reduce_sum(tf.square(tf.subtract(anchor, positive)), 1)
-		negative_dist = tf.reduce_sum(tf.square(tf.subtract(anchor, negative)), 1)
-
-		loss_1 = tf.add(tf.subtract(positive_dist, negative_dist), 0.2)
-		loss = tf.reduce_mean(tf.maximum(loss_1, 0.0), 0)
-
-		return loss, loss_1, positive_dist, negative_dist
-
-
-	@staticmethod
-	def triplet_loss(_, output):
-		output = tf.nn.l2_normalize(output, 1, 1e-10)
-		anchor, positive, negative = tf.unstack(tf.reshape(output, (-1, 3, 512)), num=3, axis=1)
-
-		positive_dist = tf.reduce_sum(tf.square(tf.subtract(anchor, positive)), 1)
-		negative_dist = tf.reduce_sum(tf.square(tf.subtract(anchor, negative)), 1)
-
-		loss_1 = tf.add(tf.subtract(positive_dist, negative_dist), 0.2)
-		loss = tf.reduce_mean(tf.maximum(loss_1, 0.0), 0)
-
-		return loss
-
 	@tf.function
 	def test_step_reg(self, x, y):
 		logits, features = self.model([x, y], training=False)
@@ -68,19 +42,16 @@ class MainModel:
 
 		return logits, features, loss, reg_loss
 
-	def softmax_loss(self, y_true, y_pred):
-		return tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(logits=y_pred, labels=y_true))
-
 	def change_learning_rate_of_optimizer(self, new_lr: float):
 		self.optimizer.learning_rate = new_lr
 		self.last_lr = new_lr
 
 		assert self.optimizer.learning_rate == self.optimizer.lr
-		
+
 		return True
 
 	def __init__(self):
-		self.loss_function = self.softmax_loss
+		self.loss_function = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
 		self.last_lr = None
 
 	@tf.function
@@ -102,16 +73,18 @@ class MainModel:
 		return logits, features, loss
 
 	def turn_softmax_into_arcface(self, num_classes: int):
-		label_input_layer = tf.keras.layers.Input((None, ), dtype=tf.int64)
+		label_input_layer = tf.keras.layers.Input((None,), dtype=tf.int64)
 
 		x = ArcFaceLayer(num_classes=num_classes, name="arcfaceLayer")(self.model.layers[-3].output, label_input_layer)
 
 		self.model = tf.keras.models.Model([self.model.layers[0].input, label_input_layer], [x, self.model.layers[-3].output])
 		self.model.summary()
 
-	def __call__(self, input_shape, weights: str = None, num_classes: int = 10, learning_rate: float = 0.1, regularizer_l: float = 5e-4, weight_path: str = None,
-	 pooling_layer: tf.keras.layers.Layer = tf.keras.layers.GlobalAveragePooling2D, create_model: bool = True, use_arcface: bool = True, 
-	 optimizer = "ADAM"):
+	def __call__(self, input_shape, weights: str = None, num_classes: int = 10, learning_rate: float = 0.1,
+	             regularizer_l: float = 5e-4, weight_path: str = None,
+	             pooling_layer: tf.keras.layers.Layer = tf.keras.layers.GlobalAveragePooling2D,
+	             create_model: bool = True, use_arcface: bool = True,
+	             optimizer="ADAM"):
 
 		self.last_lr = learning_rate
 
@@ -123,16 +96,15 @@ class MainModel:
 			print("[*] SGD chosen as optimizer")
 		elif optimizer == "MOMENTUM":
 			self.optimizer = tf.compat.v1.train.MomentumOptimizer(learning_rate=learning_rate, momentum=0.9)
+			# MomentumOptimizer is not recommended, it is from TF 1.x makes problem at learning rate change, i will update if TF 2.x version comes out
 			print("[*] MomentumOptimizer chosen as optimizer")
 		else:
 			raise Exception(f"{optimizer} is not a valid name! Go with either ADAM, SGD or MOMENTUM")
 
 		if create_model:
-			label_input_layer = tf.keras.layers.Input((None, ), dtype=tf.int64)
+			label_input_layer = tf.keras.layers.Input((None,), dtype=tf.int64)
 			self.model = self.get_model(input_shape=input_shape, weights=weights)
-			self.model.trainable=True
-			
-			regularizer_l = 5e-4
+			self.model.trainable = True
 
 			for layer in self.model.layers:
 				if "Conv" in str(layer):
@@ -147,15 +119,15 @@ class MainModel:
 			self.model = tf.keras.models.model_from_json(self.model.to_json())  # To apply regularizers
 			# ACCORDING TO ARCFACE PAPER
 			x = pooling_layer()(self.model.layers[-1].output)
-			x = BatchNormalization(epsilon=2e-5, momentum=0.9)(x)
+			x = BatchNormalization(momentum=0.9)(x)
 			x = tf.keras.layers.Dropout(0.4)(x)
 			x1 = tf.keras.layers.Dense(512, activation=None, name="features_without_bn", use_bias=True, kernel_regularizer=tf.keras.regularizers.l2(regularizer_l))(x)
-			x = BatchNormalization(epsilon=2e-5, momentum=0.9, scale=False)(x1)
+			x = BatchNormalization(momentum=0.9, scale=False)(x1)
 
-			if  use_arcface:
-				x = ArcFaceLayer(num_classes=num_classes, name="arcfaceLayer")(x, label_input_layer)
+			if use_arcface:
+				x = ArcFaceLayer(num_classes=num_classes, arc_m=0.5, arc_s=64., regularizer_l=regularizer_l, name="arcfaceLayer")(x, label_input_layer)
 			else:
-				x = tf.keras.layers.Dense(num_classes, activation=None)(x)
+				x = tf.keras.layers.Dense(num_classes, activation=None, name="classificationLayer", kernel_regularizer=tf.keras.regularizers.l2(regularizer_l))(x)
 
 			self.model = tf.keras.models.Model([self.model.layers[0].input, label_input_layer], [x, x1], name=f"{self.__name__}-ArcFace")
 			self.model.summary()
@@ -206,15 +178,15 @@ class ResNet152(MainModel):
 
 class EfficientNetFamily(MainModel):
 	all_models = [
-			efn.EfficientNetB0, 
-			efn.EfficientNetB1,
-			efn.EfficientNetB2,
-			efn.EfficientNetB3,
-			efn.EfficientNetB4,
-			efn.EfficientNetB5,
-			efn.EfficientNetB6,
-			efn.EfficientNetB7,
-		]
+		efn.EfficientNetB0,
+		efn.EfficientNetB1,
+		efn.EfficientNetB2,
+		efn.EfficientNetB3,
+		efn.EfficientNetB4,
+		efn.EfficientNetB5,
+		efn.EfficientNetB6,
+		efn.EfficientNetB7,
+	]
 
 	@property
 	def __name__(self):

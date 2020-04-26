@@ -1,7 +1,10 @@
+# I forgot where i took this code from, but it is not mine. If it is your code, please open an issue and i will fix.
+
 import mxnet as mx
 import tensorflow as tf
 
-def mx2tfrecords(imgidx, imgrec):
+
+def mx2tfrecords(imgidx, imgrec, data_name: str = "faces_emore"):
     output_path = f"../datasets/{data_name}/tran.tfrecords"
     writer = tf.compat.v1.python_io.TFRecordWriter(output_path)
     for i in imgidx:
@@ -28,6 +31,7 @@ def main(data_name: str = "faces_emore"):
     imgidx = list(range(1, int(header.label[0])))
 
     mx2tfrecords(imgidx, imgrec)    
+
 
 if __name__ == '__main__':
     print("go check README.md")

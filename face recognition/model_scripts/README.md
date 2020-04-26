@@ -72,4 +72,4 @@ Class to create graphs through TensorBoard while training
 
 ## Attention
 
-> Referred ArcFace paper can be found in [here](papers/ArcFace.pdf)
+> Referred ArcFace paper can be found in [here](../papers/ArcFace.pdf)

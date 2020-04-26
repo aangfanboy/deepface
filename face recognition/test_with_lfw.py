@@ -1,5 +1,5 @@
 """
-This script was taken from https://github.com/peteryuX/arcface-tf2/blob/66d0afb124c74b6c1e0b79a464325472ede6fb45/modules/evaluations.py
+This script was modified from https://github.com/peteryuX/arcface-tf2/blob/66d0afb124c74b6c1e0b79a464325472ede6fb45/modules/evaluations.py
 """
 import os
 import cv2
@@ -27,30 +27,21 @@ def get_val_pair(path, name):
 
 def get_lfw_data(data_path):
     """get validation data"""
-    lfw, lfw_issame = get_val_pair(data_path, 'lfw_align_112/lfw')
+    _lfw, _lfw_issame = get_val_pair(data_path, 'lfw_align_112/lfw')
 
-    return lfw, lfw_issame
+    return _lfw, _lfw_issame
 
 
 def get_val_data(data_path):
     """get validation data"""
-    lfw, lfw_issame = get_val_pair(data_path, 'lfw_align_112/lfw')
-    agedb_30, agedb_30_issame = get_val_pair(data_path, 'agedb_align_112/agedb_30')
-    cfp_fp, cfp_fp_issame = get_val_pair(data_path, 'cfp_align_112/cfp_fp')
+    _lfw, _lfw_issame = get_val_pair(data_path, 'lfw_align_112/lfw')
+    _agedb_30, _agedb_30_issame = get_val_pair(data_path, 'AgeDB/agedb_30')
+    _cfp_fp, _cfp_fp_issame = get_val_pair(data_path, 'cfp_align_112/cfp_fp')
 
-    return lfw, agedb_30, cfp_fp, lfw_issame, agedb_30_issame, cfp_fp_issame
-
-
-def ccrop_batch(imgs):
-    assert len(imgs.shape) == 4
-    resized_imgs = np.array([cv2.resize(img, (128, 128)) for img in imgs])
-    ccropped_imgs = resized_imgs[:, 8:-8, 8:-8, :]
-
-    return ccropped_imgs
+    return _lfw, _agedb_30, _cfp_fp, _lfw_issame, _agedb_30_issame, _cfp_fp_issame
 
 
 def hflip_batch(imgs):
-    assert len(imgs.shape) == 4
     return imgs[:, :, ::-1, :]
 
 
@@ -64,8 +55,8 @@ def calculate_accuracy(threshold, dist, actual_issame):
 
     tpr = 0 if (tp + fn == 0) else float(tp) / float(tp + fn)
     fpr = 0 if (fp + tn == 0) else float(fp) / float(fp + tn)
-    acc = float(tp + tn) / dist.size
-    return tpr, fpr, acc
+    _acc = float(tp + tn) / dist.size
+    return tpr, fpr, _acc
 
 
 def calculate_roc(thresholds, embeddings1, embeddings2, actual_issame,
@@ -78,8 +69,8 @@ def calculate_roc(thresholds, embeddings1, embeddings2, actual_issame,
 
     tprs = np.zeros((nrof_folds, nrof_thresholds))
     fprs = np.zeros((nrof_folds, nrof_thresholds))
-    accuracy = np.zeros((nrof_folds))
-    best_thresholds = np.zeros((nrof_folds))
+    accuracy = np.zeros((nrof_folds,))
+    best_thresholds = np.zeros((nrof_folds,))
     indices = np.arange(nrof_pairs)
 
     diff = np.subtract(embeddings1, embeddings2)
@@ -87,7 +78,7 @@ def calculate_roc(thresholds, embeddings1, embeddings2, actual_issame,
 
     for fold_idx, (train_set, test_set) in enumerate(k_fold.split(indices)):
         # Find the best threshold for the fold
-        acc_train = np.zeros((nrof_thresholds))
+        acc_train = np.zeros((nrof_thresholds,))
         for threshold_idx, threshold in enumerate(thresholds):
             _, _, acc_train[threshold_idx] = calculate_accuracy(
                 threshold, dist[train_set], actual_issame[train_set])
@@ -122,22 +113,21 @@ def evaluate(embeddings, actual_issame, nrof_folds=10):
 
 
 def perform_val_arcface(embedding_size, batch_size, model,
-                carray, issame, nrof_folds=10, is_ccrop=False, is_flip=True):
+                        carray, issame, nrof_folds=10, is_ccrop=False, is_flip=True):
     """perform val"""
     embeddings = np.zeros([len(carray), embedding_size])
 
     for idx in tqdm.tqdm(range(0, len(carray), batch_size)):
         batch = carray[idx:idx + batch_size]
         batch = np.transpose(batch, [0, 2, 3, 1]) * 0.5 + 0.5
-        if is_ccrop:
-            batch = ccrop_batch(batch)
+        b, g, r = tf.split(batch, 3, axis=-1)
+        batch = tf.concat([r, g, b], -1)
         if is_flip:
-            fliped = hflip_batch(batch)
-            emb_batch = model([batch, tf.ones((batch.shape[0], ), dtype=tf.int64)], training=False)[-1] + model([batch, tf.ones((batch.shape[0], ), dtype=tf.int64)], training=False)[-1]
+            flipped = hflip_batch(batch)
+            emb_batch = model([batch, tf.ones((batch.shape[0],), dtype=tf.int64)], training=False)[-1] + model([flipped, tf.ones((batch.shape[0],), dtype=tf.int64)], training=False)[-1]
             embeddings[idx:idx + batch_size] = l2_norm(emb_batch)
         else:
-            batch = ccrop_batch(batch)
-            emb_batch = model([batch, tf.ones((batch.shape[0], ), dtype=tf.int64)], training=False)[-1]
+            emb_batch = model([batch, tf.ones((batch.shape[0],), dtype=tf.int64)], training=False)[-1]
             embeddings[idx:idx + batch_size] = l2_norm(emb_batch)
 
     tpr, fpr, accuracy, best_thresholds = evaluate(
@@ -150,20 +140,17 @@ def perform_val(embedding_size, batch_size, model,
                 carray, issame, nrof_folds=10, is_ccrop=False, is_flip=True):
     """perform val"""
     embeddings = np.zeros([len(carray), embedding_size])
-    import cv2
 
     for idx in tqdm.tqdm(range(0, len(carray), batch_size)):
         batch = carray[idx:idx + batch_size]
         batch = np.transpose(batch, [0, 2, 3, 1])
-        batch = tf.convert_to_tensor([cv2.cvtColor(n, cv2.COLOR_BGR2RGB) for n in batch])
-        if is_ccrop:
-            batch = ccrop_batch(batch)
+        b, g, r = tf.split(batch, 3, axis=-1)
+        batch = tf.concat([r, g, b], -1)
         if is_flip:
-            fliped = hflip_batch(batch)
-            emb_batch = model(batch, training=False) + model(fliped, training=False)
+            flipped = hflip_batch(batch)
+            emb_batch = model(batch, training=False) + model(flipped, training=False)
             embeddings[idx:idx + batch_size] = l2_norm(emb_batch)
         else:
-            batch = ccrop_batch(batch)
             emb_batch = model(batch, training=False)
             embeddings[idx:idx + batch_size] = l2_norm(emb_batch)
 
@@ -176,7 +163,7 @@ def perform_val(embedding_size, batch_size, model,
 if __name__ == '__main__':
     lfw, agedb_30, cfp_fp, lfw_issame, agedb_30_issame, cfp_fp_issame = get_val_data("../datasets/")
 
-    model_ai = tf.keras.models.load_model("a_model_incep.h5")
+    model_ai = tf.keras.models.load_model("arcface_final.h5")
 
     print("-----------------------------------")
     print("Testing on LFW...")
@@ -192,6 +179,6 @@ if __name__ == '__main__':
 
     print("-----------------------------------")
     print("Testing on CFP...")
-    acc, best_th = perform_val(512, 32, model_ai, cfp_fp, cfp_fp_issame, is_ccrop=False)
+    acc, best_th = perform_val(512, 32, model_ai, cfp_fp, cfp_fp_issame, is_ccrop=True)
     print(f"Results on CFP, Accuracy --> {acc} || Best Threshold --> {best_th}")
     print("-----------------------------------")
