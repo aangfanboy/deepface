@@ -26,7 +26,7 @@ __Thank you for donations, i am grateful.__
 
 
 
-![liyana 1.0.0](images-and-figures\liyana_1-0-0.png)
+![liyana 1.0.0](images-and-figures/liyana_1-0-0.png)
 
 
 
