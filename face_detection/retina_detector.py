@@ -6,6 +6,22 @@ from face_detection.detector_main import MainHelper
 
 
 class Engine(MainHelper):
+    def draw_faces_and_labels_on_image(self, image, boxes, labels, color=(255, 0, 0), thickness: int = 5):
+        if type(color) is not list:
+            cl = color
+            color = [cl for _ in range(len(boxes))]
+
+        for box, clr, label in zip(boxes, color, labels):
+            x1, y1, x2, y2 = box
+            color2g = clr
+            if clr == "different":
+                color2g = self.generate_color()
+
+            cv2.rectangle(image, (x1, y1), (x2, y2), color2g, thickness)
+            cv2.putText(image, label, (x1, y1 - 5), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, color2g, 2, cv2.LINE_AA)
+
+        return image
+
     def draw_faces_on_image(self, image, boxes, color=(255, 0, 0), thickness: int = 5):
         if type(color) is not list:
             cl = color
