@@ -1,0 +1,185 @@
+
+body {
+
+  background-color: #121212;
+
+}
+
+p[name="title"]{
+  color: #6a0572;
+  font-size: 50px;
+  font-synthesis: style;
+  font-family: 'Comic Neue', cursive;
+  display: block;
+  margin-left: 3%;
+  margin-top: 3%;
+  text-align: center;
+}
+
+p[name="database"]{
+  color: #673AB7;
+  text-align: center;
+  font-size: 40px;
+  font-synthesis: style;
+  font-family: 'Comic Neue', cursive;
+  display: block;
+  margin-left: 3%;
+  margin-top: 3%;
+}
+
+input[name="image-button"]{
+    background-color: #303F9F;
+  	color: #f0f0f0;
+  	position: relative;
+    border: none;
+    width: 150px;
+    height: 50px;
+    border-radius: 0px;
+    display: block;
+    margin-left: 75%;
+    top: 0px;
+    font-family: 'Comic Neue', cursive;
+    margin-top: -70px;
+}
+
+div[id="database"]{
+  height: 100%;
+  width: 50%;
+  margin-top: 150px;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  overflow-x: hidden;
+  padding-top: 20px;
+  left:0;
+  background-color: none;
+}
+
+div[id="right"]{
+  height: 100%;
+  width: 50%;
+  margin-top: 150px;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  overflow-x: hidden;
+  padding-top: 20px;
+  right:0;
+  background-color: #121212;
+}
+
+img[id="my_image"]{
+  border: none;
+  margin-left: 12%;
+  filter: invert(1);
+}
+
+
+div[id="dots"]{
+  margin-left: 42.5%;
+  margin-top: -41px;
+}
+
+.dot {
+  height: 25px;
+  width: 25px;
+  background-color: #c62828;  // #00897B;
+  border-radius: 50%;
+  padding: 5px;
+  display: inline-block;
+}
+
+input[name="button2"]{
+  background-color: #FF6F00;
+  color: #f0f0f0;
+  border: none;
+  width: 150px;
+  height: 50px;
+  border-radius: 0px;
+  font-family: 'Comic Neue', cursive;
+  margin-top: 10%;
+  margin-left: 10%;
+}
+
+input[name="button3"]{
+  background-color: #673AB7;;
+  color: #f0f0f0;
+  border: none;
+  width: 150px;
+  height: 50px;
+  border-radius: 0px;
+  font-family: 'Comic Neue', cursive;
+  margin-top: 6.75%;
+  margin-left: 10%;
+  margin-right: 3.5%;
+}
+
+input[class="notfirst"]{
+  margin-left: 14%;
+}
+
+p[class="informer"]{
+  color: #36B37E;
+  border: none;
+  font-family: 'Comic Neue', cursive;
+  margin-top: 10%;
+  margin-left: 10%;
+  font-size: 20px;
+}
+
+
+div[id="generate-area"]{
+  height: 38%;
+  width: 25.25%;
+  margin-top: 28.5%;
+  margin-right: 3.5%;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  overflow-x: hidden;
+  right:0;
+  background-color: #121212;
+  border: 3px solid #f0f0f0;
+}
+
+img[id="2dspace"]{
+  border: none;
+  margin-top: 12%;
+  position: fixed;
+}
+
+div[id="infofromdb"]{
+  width: 112px;
+  height: 112px;
+  margin-top: 15%;
+  margin-left: 10%;
+}
+
+p[class="d-side-info"]{
+  color: #c62828;  // #00897B;
+  border: none;
+  margin-left: 30%;
+  margin-top: -8.5%;
+  font-family: 'Comic Neue', cursive;
+  font-size: 30px;
+  padding-bottom: 10px;
+}
+
+div[id="buttons_buttom"]{
+  margin-top: 15%;
+  margin-left: -1%;
+  height: 30%;
+}
+
+input[name="button4"]{
+  background-color: #00A8CC;
+  color: #f0f0f0;
+  border: none;
+  width: 150px;
+  height: 50px;
+  border-radius: 0px;
+  font-family: 'Comic Neue', cursive;
+  margin-top: 4%;
+  margin-left: 10%;
+  margin-right: 3.5%;
+}

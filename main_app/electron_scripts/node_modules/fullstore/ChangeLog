@@ -1,0 +1,43 @@
+2020.03.25, v3.0.0
+
+feature:
+- (fullstore) drop support of node < 4
+- (package) nodemon v2.0.2
+- (package) madrun v5.4.2
+- (package) putout v7.13.1
+- (package) eslint-plugin-putout v3.2.1
+- (package) eslint-plugin-node v11.0.0
+- (package) nyc v15.0.0
+
+
+2019.09.09, v2.0.2
+
+fix:
+- (fullstore) rm webpack
+
+
+2019.09.09, v2.0.1
+
+fix:
+- (npmignore) dist
+
+
+2019.09.09, v2.0.0
+
+feature:
+- (fullstore) drop legacy support
+- (package) nyc v14.1.1
+- (package) eslint v6.3.0
+- (package) redrun v6.0.0
+- (package) babel-preset-env
+- (package) webpack v4.1.0
+
+
+2017.09.07, v1.1.0
+
+feature:
+- (fullstore) add support of initial value
+- (package) webpack v3.0.0
+- (package) nyc v11.0.2
+- (package) eslint v4.0.0
+

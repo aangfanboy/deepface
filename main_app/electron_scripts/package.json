@@ -1,0 +1,17 @@
+{
+  "name": "liyana-main-app",
+  "version": "1.1.0",
+  "description": "liyana face analysis project application",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "aangfanboy",
+  "license": "ISC",
+  "dependencies": {
+    "chrome-socket": "0.0.1",
+    "electron-prompt": "^1.5.1",
+    "inherits": "^2.0.4",
+    "smalltalk": "^4.0.6"
+  }
+}

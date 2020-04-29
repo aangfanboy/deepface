@@ -1,0 +1,72 @@
+
+<html>
+<body>
+
+<link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css"></link>
+<script src="json_worker.js"></script>
+<script src="scripts.js"></script>
+<script src="porter.js"></script>
+
+<p name="title">liyana: face analysis project</p>
+<p hidden id="globalpath">undefined</p>
+<p hidden id="globalname">undefined</p>
+<p hidden id="isusing">false</p>
+
+<div id="database">
+  <p name="database">database</p>
+  <input type="button" onclick="openjsoninExp()" value="open database" name="button3"></input>
+  <input type="button" onclick="display2dspace()" value="display 2D space" name="button3"></input>
+  <input type="button" onclick="resetDB()" value="reset database" name="button3"></input>
+
+  <div id="infofromdb">
+    <img id="imagefromdb", width="112", height="112", display="none", src="unknown.png"></img>
+
+</div>
+<p id="d-name", class="d-side-info">No Match - Unknown</p>
+
+<div id="buttons_buttom">
+  <input type="button" onclick="compareWith()" value="basic compare" name="button4"></input>
+  <input type="button" onclick="goWebCam(0)" value="apply on webcam" name="button4"></input>
+  <input type="button" onclick="goVideo()" value="apply on video" name="button4"></input>
+  <input type="button" onclick="" value="advanced compare-BETA" name="button4"></input>
+  <input type="button" onclick="" value="use online db-BETA" name="button4"></input>
+  <input type="button" onclick="" value="donate" name="button4" style="background-color: red;"></input>
+</div>
+
+
+<div id=right>
+
+
+<img id="my_image", width="112", height="112", display="none", src="fricon.png"></img>
+<input type="button" onclick="uploadImageFile()" value="load image" name="image-button"></input>
+
+<div id="dots">
+<span class="dot" title="image loaded checkpoint", id="dot1"></span>
+<span class="dot" title="model predicted checkpoint", id="dot2"></span>
+<span class="dot" title="face match found checkpoint", id="dot3"></span>
+<span class="dot" title="fully analized checkpoint", id="dot4"></span>
+</div>
+
+<div id="buttons">
+  <input type="button" onclick="saveOutputs()" value="get features as json" name="button2"></input>
+  <input type="button" onclick="savetoDatabase()" value="save to database" name="button2", class="notfirst"></input>
+  <input type="button" onclick="" value="re-analyze with models" name="button2", class="notfirst"></input>
+</div>
+
+
+<div id="written-features">
+  <p name="age", class="informer">Age: Still Beta</p>
+  <p name="sex", class="informer">Sex: Still Beta</p>
+  <p name="ethnicity", class="informer">Ethnicity: Still Beta</p>
+  <p name="deepfake", class="informer">DeepFake: Still Beta</p>
+</div>
+
+<div id="generate-area", title="will have re-generated face from features, still beta">
+</div>
+
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,85 @@
+2019.09.19, v4.0.0
+
+feature:
+- (currify) drop support of legacy
+- (package) nyc v14.1.1
+- (package) eslint-plugin-node v10.0.0
+- (package) tape -> supertape
+
+
+2018.10.09, v3.0.0
+
+feature:
+- (package) eslint-plugin-node
+- (package) drop bundle support
+- (package) eslint v5.6.1
+- (currify) drop bower support
+- (package) nyc v13.0.1
+- (package) babel v7.0.0
+- (jshintrc) rm
+- (package) redrun v7.0.0
+- (package) redrun v6.0.0
+- (package) babel-preset-env v1.6.1
+- (package) browserify v16.0.0
+- (package) browserify v15.2.0
+
+
+2017.07.14, v2.0.6
+
+fix:
+- (package) get main back
+
+
+2017.07.14, v2.0.5
+
+fix:
+- (package) legacy node versions support
+
+feature:
+- (package) minify v3.0.0
+- (package) eslint v4.0.0
+- (package) nyc v11.0.2
+- (gitignore) add package-lock.json
+
+
+2017.05.23, v2.0.4
+
+feature:
+- (currify) rm tail
+- (package) browserify v14.0.0
+
+
+2016.12.05, v2.0.3
+
+fix:
+- (currify) bundle: empty currify in dist
+
+
+2016.11.23, v2.0.2
+
+fix:
+- (currify) when to much function.length use default
+
+
+2016.11.23, v2.0.1
+
+fix:
+- (currify) add support of 4 and 5 arguments
+
+
+2016.11.23, v2.0.0
+
+feature:
+- (travis) node_js: v6, v7
+- (currify) fn.length in curried functions
+- (package) scripts: coverage
+- (gitignore) *.swp
+- (currify) es2015-ify
+- (package) redrun v5.0.0
+- (package) redrun v4.0.0
+- (package) npm-run-all -> redrun
+- (package) jscs v3.0.3
+- (license) add
+- (gitignore) npm-debug.log -> npm-debug.log*
+- (package) browserify v13.0.0
+
