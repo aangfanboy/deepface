@@ -1,12 +1,12 @@
 # liyana: face analysis project
 
-[<img src="https://cdn2.iconfinder.com/data/icons/minimalism/512/twitter.png" alt="Twitter" style="zoom:10%;" title="follow my twitter to hear more about AI"/>](https://twitter.com/tyburakk)                            [<img src="https://cdn4.iconfinder.com/data/icons/logos-and-brands/512/343_Twitch_logo-512.png" alt="Twitch" style="zoom:8%;" title="i sometimes make live coding, follow to get notificated when i go live"/>](https://www.twitch.tv/tyburak)                              [<img src="https://cdn4.iconfinder.com/data/icons/logos-and-brands/512/395_Youtube_logo-512.png" alt="YouTube" style="zoom:10%;" title="i will make instructive videos about both liyana and AI, stay tuned"/>](https://www.youtube.com/channel/UC_ruNwRztPY_P4aUxbIFuOQ)
+[<img src="https://cdn2.iconfinder.com/data/icons/minimalism/128/twitter.png" alt="Twitter" title="follow my twitter to hear more about AI"/> ](https://twitter.com/tyburakk)                            [<img src="https://i7.uihere.com/icons/381/52/851/logo-media-social-twitch-icon-ac3b3fceb6a1933f5769a3bb147b2963.png" alt="Twitch" title="i sometimes make live coding, follow to get notificated when i go live"/>](https://www.twitch.tv/tyburak)                              [<img src="https://icons.iconarchive.com/icons/dakirby309/simply-styled/128/YouTube-icon.png" alt="YouTube" title="i will make instructive videos about both liyana and AI, stay tuned"/>](https://www.youtube.com/channel/UC_ruNwRztPY_P4aUxbIFuOQ)
 
 
 
-For supporters, My Bitcoin/coin.space: 1LUFWnzrGVLdsZ7gnfee87iX6QqSn24Tvr
+__For supporters, My Bitcoin/coin.space: 1LUFWnzrGVLdsZ7gnfee87iX6QqSn24Tvr__
 
-Thank you for donations, i am grateful.
+__Thank you for donations, i am grateful.__
 
 ## Features
 
