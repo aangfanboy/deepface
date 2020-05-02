@@ -9,6 +9,8 @@ import sys
 
 sys.path.append("../../")
 from face_detection import mtcnn_detector
+from age_sex_ethnicity_detection import final_predicter as ASE_FP
+
 from glob import glob
 from shutil import rmtree
 from sklearn.decomposition import PCA
@@ -110,13 +112,17 @@ class DataBaseManager:
 
 		return min_im
 
-	def add_to_db(self, output, name, face_frames):
+	def add_to_db(self, output, name, face_frames, side_data=None):
+		if side_data is None:
+			side_data = {}
+
 		new_id = self.get_new_id()
 		if os.path.exists(f"faces/{new_id}.jpg"):
 			new_id += 1
 
 		cv2.imwrite(f"faces/{new_id}.jpg", Engine.turn_rgb(tf.cast((face_frames * 128.) + 127., tf.uint8))[0].numpy())
-		self.data[new_id] = {"name": name, "output": output.tolist(), "face": os.path.join(os.getcwd(), "faces", f"{new_id}.jpg")}
+		self.data[new_id] = {"name": name, "output": output.tolist(), "face": os.path.join(os.getcwd(), "faces", f"{new_id}.jpg"),
+		                     "sex": side_data["sex"], "age": side_data["age"], "eth": side_data["eth"]}
 
 		self.save()
 
@@ -149,7 +155,13 @@ class Engine:
 
 	def add_to_database(self, path, name):
 		outputs, face_frames = self.go_for_image_features(path, to_bytes=False)
-		self.db_manager.add_to_db(outputs, name=name, face_frames=face_frames)
+		outputs = outputs.reshape(-1, 512)
+		sex = self.ase_predictor.predict_sex(outputs, True).tolist()  # {0: "man", 1: "woman"}
+		age = self.ase_predictor.predict_age(outputs, True).tolist()  # lambda x: f"{int(x*5)-{int(x*5)+5}}"
+		eth = self.ase_predictor.predict_ethnicity(outputs, True).tolist()  # {0: "white", 1: "black", 2: "asian", 3: "indian", 4: "Others"}
+		side_data = {"sex": sex, "age": age, "eth": eth}
+
+		self.db_manager.add_to_db(outputs, name=name, face_frames=face_frames, side_data=side_data)
 
 		return bytes(np.array([1], dtype=np.float32))
 
@@ -167,6 +179,11 @@ class Engine:
 
 	def __init__(self, model_path: str):
 		self.cos_dis = lambda x, y: tf.norm(x - y)  # tf.keras.losses.CosineSimilarity()
+		self.ase_predictor = ASE_FP.Tester(
+			"../../age_sex_ethnicity_detection/models_all/lgbm_sex_model.txt",
+			"../../age_sex_ethnicity_detection/models_all/lgbm_age_model.txt",
+			"../../age_sex_ethnicity_detection/models_all/lgbm_eth_model.txt",
+		)
 
 		self.utils = Utils()
 		self.db_manager = DataBaseManager(self.cos_dis)
@@ -269,4 +286,5 @@ class Engine:
 
 if __name__ == '__main__':
 	e = Engine("arcface_final.h5")
-	e.go_full_webcam()
+	e.add_to_database("init.jpg", "mansur")
+	# e.go_full_webcam()

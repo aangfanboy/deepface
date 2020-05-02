@@ -133,13 +133,24 @@ function findWho(){
     client.on('data', function(data) {
       const person_id = convertBlock(data)
       const whois = id2name(person_id);
+      const age = id2age(person_id);
+      const sex = id2sex(person_id);
+      const eth = id2eth(person_id);
         if(whois == "unknown"){
+          document.getElementById("age_in").textContent="Unknown";
+          document.getElementById("sex_in").textContent="Unknown";
+          document.getElementById("ethnicity_in").textContent="Ethnicity: Unknown";
+
           document.getElementById("d-name").textContent="No Match - Unknown";
           document.getElementById("d-name").style.color = "#c62828";
           document.getElementById("imagefromdb").src = "unknown.png";
           document.getElementById("dot3").style.backgroundColor  = "#c62828";
         }
         else {
+          document.getElementById("age_in").textContent=age;
+          document.getElementById("sex_in").textContent=sex;
+          document.getElementById("ethnicity_in").textContent=eth;
+
           document.getElementById("d-name").textContent="Match Found - " + whois;
           document.getElementById("d-name").style.color = "#00897B";
           document.getElementById("imagefromdb").src = id2photo(person_id);

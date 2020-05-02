@@ -124,12 +124,12 @@ p[class="informer"]{
   font-family: 'Comic Neue', cursive;
   margin-top: 10%;
   margin-left: 10%;
-  font-size: 20px;
+  font-size: 25px;
 }
 
 
 div[id="generate-area"]{
-  height: 38%;
+  height: 39.5%;
   width: 25.25%;
   margin-top: 28.5%;
   margin-right: 3.5%;
@@ -182,4 +182,9 @@ input[name="button4"]{
   margin-top: 4%;
   margin-left: 10%;
   margin-right: 3.5%;
+}
+
+h[class="in_informer"]{
+  color: #c62828;
+  font-family: 'Comic Neue', cursive;
 }

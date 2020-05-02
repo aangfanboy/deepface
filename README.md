@@ -14,19 +14,19 @@ __Thank you for donations, i am grateful.__
 - Facial recognition on webcam
 - Facial recognition on video
 - Displaying 2D space which database lies on
+- Age, sex and ethnicity detection
 
 
 
 ## Features that expected to come in next versions
 
-- Age, sex and ethnicity detection
 - DeepFake detection
 - Online database that every user can add face to common pool
 - Face re-generation with extracted features
 
 
 
-![liyana 1.0.0](images-and-figures/liyana_1-0-0.png)
+![liyana 1.1.0](images-and-figures/liyana_1-1-0.png)
 
 
 
