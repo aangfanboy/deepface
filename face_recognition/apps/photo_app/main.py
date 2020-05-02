@@ -1,9 +1,7 @@
-import os
 import sys
 sys.path.append("../../../")
 import tensorflow as tf
 
-from tqdm import tqdm
 from face_detection import mtcnn_detector
 
 
@@ -51,9 +49,12 @@ class Engine:
 
 		dist = self.cos_dis(output1, output2)
 		color = (0, 0, 255)
+		status = "different persons"
 		if dist < th:
 			color = (0, 255, 0)
+			status = "same person"
 
+		print(f"Distance --> {dist}, Those images belong to {status}.")
 		image1 = self.detector.draw_faces_on_image(image1, boxes1, color=color)
 		image2 = self.detector.draw_faces_on_image(image2, boxes2, color=color)
 
@@ -62,6 +63,6 @@ class Engine:
 
 
 if __name__ == '__main__':
-	e = Engine("../../arcface_final.h5")
-	e("t2.jpg", "t3.jpg")
+	e = Engine("../../arcface_final.h5")  # gets only arcface_final path
+	e("t2.jpg", "t4.jpg", th=1.0)  # give two image paths and threshold
 

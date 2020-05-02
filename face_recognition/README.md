@@ -28,9 +28,14 @@ Get evaluation scores for LFW, AgeDB and CFP.
 
 
 
-| Model                                                        | ArcFace | Architecture                                              | Epochs | LFW Acc | AgeDB Acc | CFP Acc |
-| ------------------------------------------------------------ | ------- | --------------------------------------------------------- | ------ | ------- | --------- | ------- |
-| [A](https://drive.google.com/open?id=1V8rz_gabP2qnPrGJYwWTJX4U6vw0pxE-) | True    | [InceptionResNetV1](model_scripts/inception_resnet_v1.py) | 6      | %99.53  | %95.11    | %93.97  |
+| Model                                                        | ArcFace | Architecture                                                 | Epochs | LFW Acc | AgeDB Acc | CFP Acc |
+| ------------------------------------------------------------ | ------- | ------------------------------------------------------------ | ------ | ------- | --------- | ------- |
+| [A](https://drive.google.com/open?id=1gUuir8ul-_RFCtnavUwSWSeqy9BVN9wF) | True    | [InceptionResNetV1](model_scripts/inception_resnet_v1.py)    | 9      | %99.53  | %95.11    | %93.97  |
+| [B](https://drive.google.com/open?id=1bTV279ZIs6p7kdARqyrqU4Vujtf5_cCF) | True    | [ResNet50V2](https://www.tensorflow.org/api_docs/python/tf/keras/applications/ResNet50V2) | 11     | %99.51  | %94.53    | %93.60  |
+
+
+
+PS: I train models on Google Colab
 
 
 
@@ -38,9 +43,9 @@ Get evaluation scores for LFW, AgeDB and CFP.
 
 
 
-- [ ] Train with ResNet50
+- [x] Train with ResNet50V2
 
-- [ ] Train with ResNet101
+- [ ] Train with ResNet101V2
 
 - [ ] Train with VarGFaceNet
 
@@ -49,3 +54,36 @@ Get evaluation scores for LFW, AgeDB and CFP.
 - [ ] Train with Dataset V4
 
   
+
+## How to train?
+
+### Prepare Dataset
+
+First download data to"dataset" folder, then use [this](/face_recognition/data_manager/turn_idx2tfrecord.py) script to turn it into tfrecord.
+
+
+
+### Training
+
+Run [this](/face_recognition/train_classifier.py) script. Parameters supported in Python file. Script will test on LFW at every 10k step.
+
+PS: Default model architecture set to [InceptionResNetV1](model_scripts/inception_resnet_v1.py), check [this](/face_recognition/model_scripts/main_model_architect.py) file for other architectures such ResNet.
+
+
+
+## Face Recognition Basic App
+
+Go to [script](apps/photo_app/main.py). Parameters supported with comments in Python file. 
+
+
+
+![match](/images-and-figures/match.png)
+
+*color is green because faces belong to same person*
+
+
+
+![no match](/images-and-figures/no_match.png)
+
+*color is red because faces belong to different persons*
+

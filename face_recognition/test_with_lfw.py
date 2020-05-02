@@ -119,7 +119,7 @@ def perform_val_arcface(embedding_size, batch_size, model,
 
     for idx in tqdm.tqdm(range(0, len(carray), batch_size)):
         batch = carray[idx:idx + batch_size]
-        batch = np.transpose(batch, [0, 2, 3, 1]) * 0.5 + 0.5
+        batch = np.transpose(batch, [0, 2, 3, 1])
         b, g, r = tf.split(batch, 3, axis=-1)
         batch = tf.concat([r, g, b], -1)
         if is_flip:

@@ -80,6 +80,28 @@ class MainModel:
 		self.model = tf.keras.models.Model([self.model.layers[0].input, label_input_layer], [x, self.model.layers[-3].output])
 		self.model.summary()
 
+	def change_regularizer_l(self, new_value: float = 5e-4):
+		for layer in self.model.layers:
+			if "Conv" in str(layer):
+				layer.kernel_regularizer = tf.keras.regularizers.l2(new_value)
+
+			elif "BatchNorm" in str(layer):
+				layer.gamma_regularizer = tf.keras.regularizers.l2(new_value)
+				layer.momentum = 0.9
+				layer.epsilon = 2e-5
+
+			elif "PReLU" in str(layer):
+				layer.alpha_regularizer = tf.keras.regularizers.l2(new_value)
+
+			elif "Dense" in str(layer):
+				layer.kernel_regularizer = tf.keras.regularizers.l2(new_value)
+
+			elif "arcfaceLayer" in str(layer):
+				layer.kernel_regularizer = tf.keras.regularizers.l2(new_value)
+
+		self.model = tf.keras.models.model_from_json(self.model.to_json())  # To apply regularizers
+		print(f"[*] Kernel regularizer value set to --> {new_value}")
+
 	def __call__(self, input_shape, weights: str = None, num_classes: int = 10, learning_rate: float = 0.1,
 	             regularizer_l: float = 5e-4, weight_path: str = None,
 	             pooling_layer: tf.keras.layers.Layer = tf.keras.layers.GlobalAveragePooling2D,
@@ -106,23 +128,13 @@ class MainModel:
 			self.model = self.get_model(input_shape=input_shape, weights=weights)
 			self.model.trainable = True
 
-			for layer in self.model.layers:
-				if "Conv" in str(layer):
-					layer.kernel_regularizer = tf.keras.regularizers.l2(regularizer_l)
-
-				elif "BatchNorm" in str(layer):
-					layer.gamma_regularizer = tf.keras.regularizers.l2(regularizer_l)
-
-				elif "PReLU" in str(layer):
-					layer.alpha_regularizer = tf.keras.regularizers.l2(regularizer_l)
-
-			self.model = tf.keras.models.model_from_json(self.model.to_json())  # To apply regularizers
+			self.change_regularizer_l(regularizer_l)
 			# ACCORDING TO ARCFACE PAPER
 			x = pooling_layer()(self.model.layers[-1].output)
-			x = BatchNormalization(momentum=0.9)(x)
+			x = BatchNormalization(momentum=0.9, epsilon=2e-5)(x)
 			x = tf.keras.layers.Dropout(0.4)(x)
 			x1 = tf.keras.layers.Dense(512, activation=None, name="features_without_bn", use_bias=True, kernel_regularizer=tf.keras.regularizers.l2(regularizer_l))(x)
-			x = BatchNormalization(momentum=0.9, scale=False)(x1)
+			x = BatchNormalization(momentum=0.9, scale=False, epsilon=2e-5)(x1)
 
 			if use_arcface:
 				x = ArcFaceLayer(num_classes=num_classes, arc_m=0.5, arc_s=64., regularizer_l=regularizer_l, name="arcfaceLayer")(x, label_input_layer)

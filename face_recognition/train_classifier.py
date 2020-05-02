@@ -55,7 +55,7 @@ class Trainer:
 	             model_path: str = "classifier_model.tf",
 	             pooling_layer: tf.keras.layers.Layer = tf.keras.layers.GlobalAveragePooling2D,
 	             lr_step_dict: dict = None,
-	             optimizer: str = "ADAM", test_only_lfw: bool = True):
+	             optimizer: str = "ADAM", test_only_lfw: bool = True, regularizer_l: float = 5e-4):
 		self.model_path = model_path
 		self.model_engine = model_engine
 		self.dataset_engine = dataset_engine
@@ -82,7 +82,7 @@ class Trainer:
 			weights=None,  # "imagenet" or None, not available for InceptionResNetV1
 			num_classes=self.num_classes,  # 85742 for MS1MV2, 10575 for Casia, 105 for MINE
 			learning_rate=learning_rate,
-			regularizer_l=5e-4,  # weight decay, train once with 5e-4 and then try something lower such 1e-5
+			regularizer_l=regularizer_l,  # weight decay, train once with 5e-4 and then try something lower such 1e-5
 			pooling_layer=pooling_layer,  # Recommended: GlobalAveragePooling
 			create_model=True,  # if you have a H5 file with config set this to zero and load model to self.model_engine.model
 			use_arcface=self.use_arcface,  # set False if you want to train it as regular classification
@@ -166,6 +166,8 @@ class Trainer:
 
 				if i % alfa_multiplied_qin == 0 and self.use_arcface and i > 10:
 					self.test_on_val_data(False, i, alfa_multiplied_qin)
+					self.save_final_model(sum_it=False)
+					print("[*] Final model saved")
 
 				if max_iteration is not None and i >= max_iteration:
 					print(f"[{i}] Reached to given maximum iteration({max_iteration})")
@@ -178,9 +180,10 @@ class Trainer:
 			self.model_engine.model.save_weights(self.model_path)
 			print(f"[*] Model saved to {self.model_path}, end of training.")
 
-	def save_final_model(self, path: str = "arcface_final.h5", n: int = -4):
+	def save_final_model(self, path: str = "arcface_final.h5", n: int = -4, sum_it: bool = True):
 		m = tf.keras.models.Model(self.model_engine.model.layers[0].input, self.model_engine.model.layers[n].output)
-		m.summary()
+		if sum_it:
+			m.summary()
 
 		m.save(path)
 		print(f"[*] Final feature extractor saved to {path}")
@@ -188,16 +191,16 @@ class Trainer:
 
 if __name__ == '__main__':
 	TDOM = DSM.DataEngineTFRecord(
-		"../datasets/faces_emore/tran.tfrecords",
+		"../datasets/faces_emore/tran.tfrecords",  # tfrecord path
 		batch_size=16,
-		epochs=-1,
+		epochs=-1,  # set to "-1" so it can stream forever
 		buffer_size=30000,
-		reshuffle_each_iteration=True,
-		test_batch=0
+		reshuffle_each_iteration=True,  # set True if you set test_batch to 0
+		test_batch=0  # don't recommended on ArcFace training
 	)  # TDOM for "Tensorflow Dataset Object Manager"
 
 	TBE = TBH.TensorBoardCallback(
-		logdir="classifier_tensorboard"
+		logdir="classifier_tensorboard"  # folder to write TensorBoard
 	)  # TBE for "TensorBoard Engine"
 
 	ME = MMA.InceptionResNetV1()  # ME for "Model Engine"
@@ -207,16 +210,18 @@ if __name__ == '__main__':
 		model_engine=ME,
 		dataset_engine=TDOM,
 		tensorboard_engine=TBE,
-		use_arcface=True,
-		learning_rate=0.004,
-		model_path="ArcFaceModel/model.tf",
-		optimizer="SGD",
+		use_arcface=True,  # set False if you want to train a normal classification model
+		learning_rate=0.004,  # it doesn't matter if you set lr_step_dict to anything but None
+		model_path="ArcFaceModel/model.tf",  # it will save only weights, you can chose "h5" as extension too
+		optimizer="SGD",  # SGD, ADAM or MOMENTUM. MOMENTUM is not recommended
 		lr_step_dict={
 			int(60000 * k_value): 0.004,
 			int(80000 * k_value): 0.0005,
 			int(100000 * k_value): 0.0003,
-			int(120000 * k_value): 0.0001,
-		}
+			int(140000 * k_value): 0.0001,
+		},
+		test_only_lfw=True,  # set to False if you want to test it into AgeDB and CPF too.
+		regularizer_l=5e-4  # "l" parameter for l2 regularizer
 	)
 
 	trainer(max_iteration=-1, alfa_step=5000, qin=2)

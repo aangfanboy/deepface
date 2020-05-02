@@ -5,7 +5,7 @@ import tensorflow as tf
 
 
 class ArcFaceLayer(tf.keras.layers.Layer):
-	def __init__(self, num_classes, arc_m=0.5, arc_s=64., regularizer_l: float = 5e-4, **kwargs):  # has been set to it's defaults according to arcface paper
+	def __init__(self, num_classes=10, arc_m=0.5, arc_s=64., regularizer_l: float = 5e-4, **kwargs):  # has been set to it's defaults according to arcface paper
 		super(ArcFaceLayer, self).__init__(**kwargs)
 		self.num_classes = num_classes
 		self.regularizer_l = regularizer_l
@@ -17,9 +17,11 @@ class ArcFaceLayer(tf.keras.layers.Layer):
 		self.th = tf.identity(math.cos(math.pi - self.arc_m))
 		self.mm = tf.multiply(self.sin_m, self.arc_m)
 
+		self.kernel_regularizer = tf.keras.regularizers.l2(self.regularizer_l)
+
 	def build(self, input_shape):
 		self.kernel = self.add_weight(name="kernel", shape=[512, self.num_classes], initializer=tf.keras.initializers.glorot_normal(),
-		                              trainable=True, regularizer=tf.keras.regularizers.l2(self.regularizer_l))
+		                              trainable=True, regularizer=self.kernel_regularizer)
 
 		super(ArcFaceLayer, self).build(input_shape)
 
@@ -49,6 +51,11 @@ class ArcFaceLayer(tf.keras.layers.Layer):
 		output = tf.add(tf.multiply(s_cos_t, inv_mask), tf.multiply(cos_mt_temp, mask), name='arcface_loss_output')
 
 		return output
+
+	def get_config(self):
+		config = super(ArcFaceLayer, self).get_config()
+		config.update({'num_classes': self.num_classes})
+		return config
 
 
 if __name__ == '__main__':

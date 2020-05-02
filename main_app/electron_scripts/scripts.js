@@ -1,4 +1,5 @@
 const { dialog } = require('electron').remote
+const { clipboard } = require('electron')
 
 function get_face(path){
 
@@ -109,4 +110,15 @@ function goVideo() {
   })
 
 
+}
+
+
+function donateButton(){
+  clipboard.writeText("1LUFWnzrGVLdsZ7gnfee87iX6QqSn24Tvr")
+  dialog.showMessageBox({
+    title: "liyana - donate",
+      message: 'Copied to Clipboard',
+      detail: 'My Bitcoin/coin.space: 1LUFWnzrGVLdsZ7gnfee87iX6QqSn24Tvr\nThank you for donations, i am grateful.',
+      buttons: ['Ok'],
+    })
 }

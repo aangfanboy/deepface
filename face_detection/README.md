@@ -30,7 +30,8 @@ Face Detection with [Retina Face](https://arxiv.org/pdf/1905.00641v2.pdf), libra
 
 
 
-- Train my own RetinaFace model with TensorFlow 2.x
+- [ ] Add face aligner
+- [ ] Train my own RetinaFace model with TensorFlow 2.x
 
 
 

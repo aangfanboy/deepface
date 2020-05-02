@@ -30,6 +30,24 @@ __Thank you for donations, i am grateful.__
 
 
 
+# Usage
+
+## Python Side
+
+- Install libraries with ``` pip install -r requirements.txt ``` 
+- Download a model from [face recognition folder](/face_recognition/), extract it, copy *arcface_final.h5* to *main_app/python_server/arcface_final.h5*
+- Run *main_app/python_server/server.py*
+- If you don't need a GUI, run *main_app/python_server/client.py*. Commands are listed in [here](/main_app/python_server/tensorflow_worker.py).
+
+I highly recommend to use a GPU, you can follow [those](https://www.tensorflow.org/install/gpu) steps if you have one.
 
 
-> This app is running electron/javascript as client and python as server. I will add installation steps when app comes out of BETA but for now you can use it with npm. 
+
+## Electron Side
+
+- Install electron with npm. Check [this page](https://www.electronjs.org/docs/tutorial/installation) for help.
+- Go */main_app/electron_scripts* and run ```electron .```  while python server is running. 
+
+
+
+I will add a video to YouTube to explain how you can install and how it works, stay tuned.
