@@ -4,10 +4,12 @@ from dataset_manager import DataEngineTypical as DET
 
 
 class Engine:
-	def _bytes_feature(self, value):
+	@staticmethod
+	def _bytes_feature(value):
 		return tf.train.Feature(bytes_list=tf.train.BytesList(value=[value]))
 
-	def _int64_feature(self, value):
+	@staticmethod
+	def _int64_feature(value):
 		return tf.train.Feature(int64_list=tf.train.Int64List(value=[value]))
 
 	def __init__(self, data_engine_dataset: tf.data.Dataset, path: str = "../../datasets/tran.tfrecords"):
@@ -18,6 +20,7 @@ class Engine:
 
 	def __call__(self):
 		print(f"processing to {self.path}")
+		i = 0
 		for i, (x, y) in enumerate(self.dataset):
 			feature = {
 				'label': self._int64_feature(y),
@@ -36,7 +39,6 @@ class Engine:
 if __name__ == '__main__':
 	"""
 	Examples usage can be found below
-
 	In this example, script will read images from '../../datasets/dataset_V4'
 	and save them to TFRecord file located in '../../datasets/dataset_V4/tran_(test/train).tfrecords'
 	"""
