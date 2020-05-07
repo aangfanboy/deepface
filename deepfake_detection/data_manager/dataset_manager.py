@@ -58,7 +58,7 @@ class DataEngineTypical:
 			self.dataset_test = self.dataset_test.map(self.mapper, num_parallel_calls=tf.data.experimental.AUTOTUNE)
 
 		self.dataset = self.dataset.batch(batch_size, drop_remainder=True).repeat(epochs)
-		self.dataset_test = self.dataset_test.batch(batch_size, drop_remainder=True).repeat(epochs)
+		self.dataset_test = self.dataset_test.batch(batch_size, drop_remainder=True)
 
 	def load_images(self):
 		x_data, y_data = [], []
