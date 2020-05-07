@@ -14,6 +14,10 @@
 
 ​			This dataset contains both real and fake(generated with deepfake) images. I'm not allowed to share that for now. This data collected from [here](http://kaggle.com/c/deepfake-detection-challenge/) and re-processed by [Zemana Team](https://www.zemana.com/).
 
+### UTKFace
+
+​			You can check [this](https://susanqq.github.io/UTKFace/) dataset page. I use this dataset for ASE.
+
 ​	 
 
 ## Validation Datasets
