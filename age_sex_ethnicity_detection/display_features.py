@@ -21,9 +21,9 @@ class Engine:
 			if i > n > 0:
 				break
 
-			age, sex, gender = tf.split(y, 3, axis=1)
+			age, sex, eth = tf.split(y, 3, axis=1)
 			output = self.model(x, training=False)
-			feature = gender
+			feature = eth
 			if by == "age":
 				feature = age
 			elif by == "sex":

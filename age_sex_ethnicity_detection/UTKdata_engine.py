@@ -6,9 +6,39 @@ class DataEngineTypical:
 		for path in tf.io.gfile.listdir(self.main_path):
 			splitted = path.split("_")
 			try:
-				age, sex, gender, _ = splitted
+				age, sex, eth, _ = splitted
 
-				yield self.main_path+path, (str(int(int(age)/5)), sex, gender)
+				yield self.main_path+path, (str(int(int(age)/5)), sex, eth)
+			except ValueError:
+				continue
+
+	def path_yielder_age(self):
+		for path in tf.io.gfile.listdir(self.main_path):
+			splitted = path.split("_")
+			try:
+				age, _, _, _ = splitted
+
+				yield self.main_path+path, int(int(age)/5)
+			except ValueError:
+				continue
+
+	def path_yielder_sex(self):
+		for path in tf.io.gfile.listdir(self.main_path):
+			splitted = path.split("_")
+			try:
+				_, sex, _, _ = splitted
+
+				yield self.main_path+path, int(sex)
+			except ValueError:
+				continue
+
+	def path_yielder_eth(self):
+		for path in tf.io.gfile.listdir(self.main_path):
+			splitted = path.split("_")
+			try:
+				_, _, eth, _ = splitted
+
+				yield self.main_path+path, int(eth)
 			except ValueError:
 				continue
 
@@ -25,15 +55,26 @@ class DataEngineTypical:
 
 	def __init__(self, main_path: str, batch_size: int = 16, buffer_size: int = 10000, epochs: int = 1,
 	             reshuffle_each_iteration: bool = False, test_batch=64,
-	             map_to: bool = True):
+	             map_to: bool = True, by: str = None):
 		self.main_path = main_path.rstrip("/") + "/"
+
+		self.yielder = self.path_yielder
+		if by is not None:
+			if by == "sex":
+				self.yielder = self.path_yielder_sex
+			elif by == "age":
+				self.yielder = self.path_yielder_age
+			elif by == "eth":
+				self.yielder = self.path_yielder_eth
+			else:
+				raise Exception(f"\"by\" value must be either \"sex\", \"age\" or \"eth\", {by} is not valid!")
 
 		self.dataset_test = None
 		if test_batch > 0:
 			reshuffle_each_iteration = False
 			print(f"[*] reshuffle_each_iteration set to False to create a appropriate test set, this may cancelled if tf.data will fixed.")
 
-		self.dataset = tf.data.Dataset.from_generator(self.path_yielder, (tf.string, tf.int32))
+		self.dataset = tf.data.Dataset.from_generator(self.yielder, (tf.string, tf.int32))
 		if buffer_size > 0:
 			self.dataset = self.dataset.shuffle(buffer_size, reshuffle_each_iteration=reshuffle_each_iteration, seed=42)
 
