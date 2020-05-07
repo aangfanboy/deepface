@@ -10,6 +10,7 @@ import sys
 sys.path.append("../../")
 from face_detection import mtcnn_detector
 from age_sex_ethnicity_detection import final_predicter as ASE_FP
+from deepfake_detection import final_predicter as DF_FP
 
 from glob import glob
 from shutil import rmtree
@@ -74,6 +75,7 @@ class DataBaseManager:
 				outputs.append(self.data[key]["output"])
 				y_data.append(int(key))
 
+			outputs = tf.convert_to_tensor(outputs).numpy().reshape(-1, 512)
 			pc_all = self.pca.fit_transform(outputs)
 
 			fig, ax = plt.subplots(figsize=(10, 10))
@@ -121,8 +123,8 @@ class DataBaseManager:
 			new_id += 1
 
 		cv2.imwrite(f"faces/{new_id}.jpg", Engine.turn_rgb(tf.cast((face_frames * 128.) + 127., tf.uint8))[0].numpy())
-		self.data[new_id] = {"name": name, "output": output.tolist(), "face": os.path.join(os.getcwd(), "faces", f"{new_id}.jpg"),
-		                     "sex": side_data["sex"], "age": side_data["age"], "eth": side_data["eth"]}
+		self.data[str(new_id)] = {"name": name, "output": output.tolist(), "face": os.path.join(os.getcwd(), "faces", f"{new_id}.jpg"),
+		                          "sex": side_data["sex"], "age": side_data["age"], "eth": side_data["eth"]}
 
 		self.save()
 
@@ -153,17 +155,49 @@ class Engine:
 
 		return bytes(np.array(match[1], dtype=np.float32))
 
+	def update_ASE(self, path, person_id):
+		image = self.detector.load_image(path)
+		faces = self.detector.get_faces_from_image(image)
+		boxes = self.detector.get_boxes_from_faces(faces)
+		face_frames = self.turn_rgb(self.detector.take_faces_from_boxes(image, boxes))
+		face_frames = tf.convert_to_tensor([self.set_face(n) for n in face_frames])
+
+		sex = self.ase_predictor.predict_sex(face_frames).tolist()  # {0: "man", 1: "woman"}
+		age = self.ase_predictor.predict_age(face_frames).tolist()  # lambda x: f"{int(x*5)-{int(x*5)+5}}"
+		eth = self.ase_predictor.predict_ethnicity(face_frames).tolist()  # {0: "white", 1: "black", 2: "asian", 3: "indian", 4: "Others"}
+		side_data = {"sex": sex, "age": age, "eth": eth}
+
+		try:
+			self.db_manager.data[str(person_id)]["sex"] = side_data["sex"]
+			self.db_manager.data[str(person_id)]["age"] = side_data["age"]
+			self.db_manager.data[str(person_id)]["eth"] = side_data["eth"]
+
+			self.db_manager.save()
+		except KeyError:
+			return bytes(np.array([-1], dtype=np.float32))
+
+		return bytes(np.array([1], dtype=np.float32))
+
 	def add_to_database(self, path, name):
 		outputs, face_frames = self.go_for_image_features(path, to_bytes=False)
 		outputs = outputs.reshape(-1, 512)
-		sex = self.ase_predictor.predict_sex(outputs, True).tolist()  # {0: "man", 1: "woman"}
-		age = self.ase_predictor.predict_age(outputs, True).tolist()  # lambda x: f"{int(x*5)-{int(x*5)+5}}"
-		eth = self.ase_predictor.predict_ethnicity(outputs, True).tolist()  # {0: "white", 1: "black", 2: "asian", 3: "indian", 4: "Others"}
+		sex = self.ase_predictor.predict_sex(face_frames).tolist()  # {0: "man", 1: "woman"}
+		age = self.ase_predictor.predict_age(face_frames).tolist()  # lambda x: f"{int(x*5)-{int(x*5)+5}}"
+		eth = self.ase_predictor.predict_ethnicity(face_frames).tolist()  # {0: "white", 1: "black", 2: "asian", 3: "indian", 4: "Others"}
 		side_data = {"sex": sex, "age": age, "eth": eth}
 
 		self.db_manager.add_to_db(outputs, name=name, face_frames=face_frames, side_data=side_data)
 
 		return bytes(np.array([1], dtype=np.float32))
+
+	def is_deepfake(self, path):
+		image = self.detector.load_image(path)
+		faces = self.detector.get_faces_from_image(image)
+		boxes = self.detector.get_boxes_from_faces(faces)
+		face_frames = self.detector.take_faces_from_boxes(image, boxes)
+		face_frames = self.turn_rgb(tf.convert_to_tensor([self.set_face(n) for n in face_frames]))
+
+		return bytes(np.array(tf.cast(tf.multiply(self.df_predictor.predict_deepfake(face_frames), 100), tf.int32).numpy(), dtype=np.float32))
 
 	def get_only_face_and_save(self, path):
 		image = self.detector.load_image(path)
@@ -180,9 +214,12 @@ class Engine:
 	def __init__(self, model_path: str):
 		self.cos_dis = lambda x, y: tf.norm(x - y)  # tf.keras.losses.CosineSimilarity()
 		self.ase_predictor = ASE_FP.Tester(
-			"../../age_sex_ethnicity_detection/models_all/lgbm_sex_model.txt",
-			"../../age_sex_ethnicity_detection/models_all/lgbm_age_model.txt",
-			"../../age_sex_ethnicity_detection/models_all/lgbm_eth_model.txt",
+			"../../age_sex_ethnicity_detection/models_all/sex_model.h5",
+			"../../age_sex_ethnicity_detection/models_all/age_model.h5",
+			"../../age_sex_ethnicity_detection/models_all/eth_model.h5",
+		)
+		self.df_predictor = DF_FP.Tester(
+			"../../deepfake_detection/models_all/deepfake_model.h5"
 		)
 
 		self.utils = Utils()
@@ -286,5 +323,5 @@ class Engine:
 
 if __name__ == '__main__':
 	e = Engine("arcface_final.h5")
-	e.add_to_database("init.jpg", "mansur")
+	print(e.is_deepfake("test.jpg"))
 	# e.go_full_webcam()

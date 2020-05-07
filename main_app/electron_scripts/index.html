@@ -12,6 +12,7 @@
 <p hidden id="globalpath">undefined</p>
 <p hidden id="globalname">undefined</p>
 <p hidden id="isusing">false</p>
+<p hidden id="last_id">0</p>
 
 <div id="database">
   <p name="database">database</p>
@@ -51,7 +52,7 @@
 <div id="buttons">
   <input type="button" onclick="saveOutputs()" value="get features as json" name="button2"></input>
   <input type="button" onclick="savetoDatabase()" value="save to database" name="button2", class="notfirst"></input>
-  <input type="button" onclick="" value="re-analyze with models" name="button2", class="notfirst"></input>
+  <input type="button" onclick="updateAnalysis()" value="re-analyze with models" name="button2", class="notfirst"></input>
 </div>
 
 
@@ -59,7 +60,7 @@
   <p id="age", class="informer">Age: <h id="age_in", class="in_informer">Unknown</h></p>
   <p id="sex", class="informer">Sex: <h id="sex_in", class="in_informer">Unknown</h></p>
   <p id="ethnicity", class="informer">Ethnicity: <h id="ethnicity_in", class="in_informer">Unknown</h></p>
-  <p id="deepfake", class="informer">DeepFake: <h id="deepfake_in", class="in_informer">Still Beta</h></p>
+  <p id="deepfake", class="informer">DeepFake: <h id="deepfake_in", class="in_informer">Unknown</h></p>
 </div>
 
 <div id="generate-area", title="will have re-generated face from features, still beta">

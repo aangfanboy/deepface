@@ -44,6 +44,15 @@ class Server:
         elif b"go_for_video" in input_command:
             input_command = input_command.decode("utf-8")
             output_command = self.tensorflow_engine.go_full_webcam(path=input_command.strip().split(" ")[-1].strip())
+        elif b"test_deepfake" in input_command:
+            input_command = input_command.decode("utf-8")
+            output_command = self.tensorflow_engine.is_deepfake(path=input_command.strip().split(" ")[-1].strip())
+        elif b"update_ase" in input_command:
+            input_command = input_command.decode("utf-8")
+            aaa = input_command.strip().split(" ")
+            path_g = aaa[-2].strip()
+            person_id_g = aaa[-1].strip()
+            output_command = self.tensorflow_engine.update_ASE(path=path_g, person_id=int(person_id_g))
 
         return output_command
 

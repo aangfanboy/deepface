@@ -47,6 +47,48 @@ function mainWorker(){
   console.log("denendi");
 }
 
+function updateAnalysis(){
+document.body.style.cursor = 'wait';
+disableButtons();
+person_id = document.getElementById("last_id").text.toString();
+path = document.getElementById("globalpath").text
+if (path != undefined){
+client = net.connect({host:'127.0.0.1', port:64645},  () => {
+        // 'connect' listener
+        console.log('connected to server!');
+        const v1 = 'update_ase ';
+        client.write(v1.concat(path).concat(" ").concat(person_id));
+      });
+
+  client.on('data', function(data) {
+    setTimeout(function(){
+      delete json;
+      load_json();
+
+      const age = id2age(person_id);
+      const sex = id2sex(person_id);
+      const eth = id2eth(person_id);
+      document.getElementById("age_in").textContent=age;
+      document.getElementById("sex_in").textContent=sex;
+      document.getElementById("ethnicity_in").textContent=eth;
+
+      client.destroy(); // kill client after server's response
+      document.body.style.cursor = 'auto';
+      activateButtons();
+      console.log("Analysis updated");
+
+    }, 5000);
+
+  });
+
+  client.on('close', function() {
+    console.log('Connection closed');
+  });
+
+  }
+
+}
+
 function saveOutputs(){
   document.body.style.cursor = 'wait';
   disableButtons();
@@ -132,6 +174,7 @@ function findWho(){
 
     client.on('data', function(data) {
       const person_id = convertBlock(data)
+      document.getElementById("last_id").text=person_id;
       const whois = id2name(person_id);
       const age = id2age(person_id);
       const sex = id2sex(person_id);
@@ -139,7 +182,7 @@ function findWho(){
         if(whois == "unknown"){
           document.getElementById("age_in").textContent="Unknown";
           document.getElementById("sex_in").textContent="Unknown";
-          document.getElementById("ethnicity_in").textContent="Ethnicity: Unknown";
+          document.getElementById("ethnicity_in").textContent="Unknown";
 
           document.getElementById("d-name").textContent="No Match - Unknown";
           document.getElementById("d-name").style.color = "#c62828";
@@ -156,7 +199,7 @@ function findWho(){
           document.getElementById("imagefromdb").src = id2photo(person_id);
           document.getElementById("dot3").style.backgroundColor  = "#00897B";
         }
-      	console.log('This is: ' + whois);
+      	console.log('This is: ' + whois)
       	client.destroy(); // kill client after server's response
         document.body.style.cursor = 'auto';
         activateButtons();
@@ -165,6 +208,41 @@ function findWho(){
 
     client.on('close', function() {
     	console.log('Connection closed');
+      getDeepFakeResults();
+    });
+
+    }
+}
+
+function getDeepFakeResults(){
+  document.body.style.cursor = 'wait';
+  disableButtons();
+
+  document.getElementById("dot4").style.backgroundColor  = "#c62828";
+
+  path = document.getElementById("globalpath").text
+  if (path != undefined){
+  client = net.connect({host:'127.0.0.1', port:64645},  () => {
+          // 'connect' listener
+          console.log('connected to server!');
+          const v1 = 'test_deepfake ';
+          client.write(v1.concat(path));
+        });
+
+    client.on('data', function(data) {
+      const deepfake_rate = convertBlock(data)
+
+      document.getElementById("deepfake_in").textContent="%" + deepfake_rate.toString();
+      document.getElementById("dot4").style.backgroundColor  = "#00897B";
+
+        client.destroy(); // kill client after server's response
+        document.body.style.cursor = 'auto';
+        activateButtons();
+      }
+    );
+
+    client.on('close', function() {
+      console.log('Connection closed');
     });
 
     }

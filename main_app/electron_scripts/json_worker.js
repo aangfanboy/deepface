@@ -8,8 +8,8 @@ function age_dict(x){
 function load_json(){
   nocache('../python_server/database.json');
     json = require('../python_server/database.json'); //(with path)
-    sex_dict = {0: "man", 1: "woman"};
-    eth_dict = {0: "white", 1: "black", 2: "asian", 3: "indian", 4: "Others"};
+    sex_dict = {0: "male", 1: "female"};
+    eth_dict = {0: "white", 1: "black", 2: "asian", 3: "indian", 4: "other"};
 
 }
 
