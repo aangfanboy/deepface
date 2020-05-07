@@ -153,7 +153,7 @@ class Trainer:
 				if i % alfa_multiplied_qin == 0 and self.dataset_engine.dataset_test is not None and i > 10:
 					for x_test, y_test in self.dataset_engine.dataset_test:
 						logits, features, loss, reg_loss = self.model_engine.test_step_reg(x_test, y_test)
-						accuracy = self.calculate_accuracy(y, logits)
+						accuracy = self.calculate_accuracy(y_test, logits)
 
 						self.tensorboard_engine({"val. loss": loss, "val. accuracy": accuracy})
 

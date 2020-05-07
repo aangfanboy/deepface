@@ -1,8 +1,12 @@
 import tensorflow as tf
 import efficientnet.tfkeras as efn
 
-from model_scripts import inception_resnet_v1
-from model_scripts.ArcFaceLayer import ArcFaceLayer
+try:
+	from model_scripts import inception_resnet_v1
+	from model_scripts.ArcFaceLayer import ArcFaceLayer
+except ModuleNotFoundError:
+	from face_recognition.model_scripts import inception_resnet_v1
+	from face_recognition.model_scripts.ArcFaceLayer import ArcFaceLayer
 
 
 class BatchNormalization(tf.keras.layers.BatchNormalization):
