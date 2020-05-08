@@ -61,3 +61,7 @@
 
 
 > I'm grateful to [Zemana](https://www.zemana.com/) for sharing **_DFDC Dataset V4_** with me.
+
+
+
+> You can use [this](create_sub_datasets.py) script to download *mnist* and *fashion mnist* datasets and to turn them into tfrecord. I used these dataset to test image generation from features models.
