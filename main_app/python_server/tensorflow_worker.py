@@ -105,7 +105,7 @@ class DataBaseManager:
 			self.data = json.load(read_file)
 
 	def find_match_in_db(self, output, th: float = 1.2):
-		min_im = (1.1, -1, "none")
+		min_im = (1.0, -1, "none")
 		for key in self.data:
 			output_db = tf.convert_to_tensor(self.data[key]["output"])
 			dist = self.distance_metric(output_db, output).numpy()
@@ -224,7 +224,7 @@ class Engine:
 		return bytes(np.array([face_id], dtype=np.float32))
 
 	def __init__(self, model_path: str):
-		self.cos_dis = lambda x, y: tf.norm(x - y)  # tf.keras.losses.CosineSimilarity()
+		self.cos_dis = tf.keras.losses.CosineSimilarity()
 		self.ase_predictor = ASE_FP.Tester(
 			"../../age_sex_ethnicity_detection/models_all/sex_model.h5",
 			"../../age_sex_ethnicity_detection/models_all/age_model.h5",
@@ -244,8 +244,13 @@ class Engine:
 		self.find_who("init.jpg")
 		self.db_manager.get_2d_space()
 
+	@staticmethod
+	def flip_batch(batch):
+		return batch[:, :, ::-1, :]
+
 	def get_output(self, images):
-		return tf.nn.l2_normalize(self.model(images, training=False))
+		return tf.nn.l2_normalize(self.model(images, training=False)) +\
+		       tf.nn.l2_normalize(self.model(self.flip_batch(images), training=False))
 
 	def go_full_webcam(self, path=0):
 		try:
@@ -260,15 +265,23 @@ class Engine:
 			return bytes(np.array([0], dtype=np.float32))
 
 		color_map = {}
+		video_writer = None
 
 		while True:
 			try:
 				ret, frame = cap.read()
 
-				image = frame
+				if not ret:
+					break
+
+				if video_writer is None:
+					h, w, _ = frame.shape
+					video_writer = cv2.VideoWriter('output.avi', cv2.VideoWriter_fourcc(*'XVID'), 16.0, (w, h))
+
+				image = frame.copy()
 				faces = self.detector.get_faces_from_image(image)
-				boxes, eyes = self.detector.get_boxes_from_faces_with_eyes(faces)
-				if len(boxes) > 0:
+				boxes1, eyes = self.detector.get_boxes_from_faces_with_eyes(faces)
+				if len(boxes1) > 0:
 					image = self.detector.align_image_from_eyes(image, eyes)
 					faces = self.detector.get_faces_from_image(image)
 					boxes, eyes = self.detector.get_boxes_from_faces_with_eyes(faces)
@@ -286,22 +299,26 @@ class Engine:
 
 						colors.append(color_map[name])
 
-					frame = self.detector.draw_faces_and_labels_on_image(image, boxes, names, color=colors)
+					frame = self.detector.draw_faces_and_labels_on_image(frame, boxes1, names, color=colors)
+					video_writer.write(frame)
 
 				cv2.imshow('Input', frame)
 
 				c = cv2.waitKey(1)
 				if c == 27 or ret is False:
+					video_writer.release()
 					break
 
-			except Exception as e:
-				print(e)
-				if "not valid" in str(e):
+			except Exception as err:
+				print(err)
+				if "not valid" in str(err):
+					video_writer.release()
 					break
 				continue
 
 		cap.release()
 		cv2.destroyAllWindows()
+		video_writer.release()
 
 		return bytes(np.array([1], dtype=np.float32))
 
@@ -347,5 +364,5 @@ class Engine:
 
 if __name__ == '__main__':
 	e = Engine("arcface_final.h5")
-	print(e.is_deepfake("test.jpg"))
+	print(e.go_full_webcam("vv_elon.gif"))
 	# e.go_full_webcam()
