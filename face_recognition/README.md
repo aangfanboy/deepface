@@ -28,10 +28,11 @@ Get evaluation scores for LFW, AgeDB and CFP.
 
 
 
-| Model                                                        | ArcFace | Architecture                                                 | Epochs | LFW Acc | AgeDB Acc | CFP Acc |
-| ------------------------------------------------------------ | ------- | ------------------------------------------------------------ | ------ | ------- | --------- | ------- |
-| [A](https://drive.google.com/open?id=1gUuir8ul-_RFCtnavUwSWSeqy9BVN9wF) | True    | [InceptionResNetV1](model_scripts/inception_resnet_v1.py)    | 9      | %99.53  | %95.11    | %93.97  |
-| [B](https://drive.google.com/open?id=1bTV279ZIs6p7kdARqyrqU4Vujtf5_cCF) | True    | [ResNet50V2](https://www.tensorflow.org/api_docs/python/tf/keras/applications/ResNet50V2) | 11     | %99.51  | %94.53    | %93.60  |
+| Model                                                        | Architecture                                                 | Epochs | LFW Acc | AgeDB Acc | CFP Acc |
+| ------------------------------------------------------------ | ------------------------------------------------------------ | ------ | ------- | --------- | ------- |
+| [A](https://drive.google.com/open?id=1gUuir8ul-_RFCtnavUwSWSeqy9BVN9wF) | [InceptionResNetV1](model_scripts/inception_resnet_v1.py)    | 9      | %99.53  | %95.11    | %93.97  |
+| [B](https://drive.google.com/open?id=1bTV279ZIs6p7kdARqyrqU4Vujtf5_cCF) | [ResNet50V2](https://www.tensorflow.org/api_docs/python/tf/keras/applications/ResNet50V2) | 11     | %99.51  | %94.53    | %93.60  |
+| [C](https://drive.google.com/open?id=1qUtjhrYDMRqc2lRPNBV1ftkbyIPmTJYp) | [L_Resnet50_E_IR](model_scripts/LResNetIR.py)                | 7      | %99.70  | %96.75    | %97.34  |
 
 
 
@@ -45,7 +46,11 @@ PS: I train models on Google Colab
 
 - [x] Train with ResNet50V2
 
-- [ ] Train with ResNet101V2
+- [x] Train with ResNet101V2(Results are even worse than ResNet50V2 Model, not gonna share this one)
+
+- [x] Train with L_Resnet50_E_IR(I could try to train more epochs but i will focus on Resnet100 for now)
+
+- [ ] Train with L_Resnet100_E_IR
 
 - [ ] Train with VarGFaceNet
 

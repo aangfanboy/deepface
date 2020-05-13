@@ -5,7 +5,7 @@ import tensorflow as tf
 
 
 def mx2tfrecords(imgidx, imgrec, data_name: str = "faces_emore"):
-    output_path = f"../datasets/{data_name}/tran.tfrecords"
+    output_path = f"../../datasets/{data_name}/tran.tfrecords"
     writer = tf.compat.v1.python_io.TFRecordWriter(output_path)
     for i in imgidx:
         img_info = imgrec.read_idx(i)
@@ -24,7 +24,7 @@ def mx2tfrecords(imgidx, imgrec, data_name: str = "faces_emore"):
 def main(data_name: str = "faces_emore"):
     input("\nPRESS ENTER TO GO THROUGH THIS PROCESS")
 
-    imgrec = mx.recordio.MXIndexedRecordIO(f"../datasets/{data_name}/train.idx", f"../datasets/{data_name}/train.rec", 'r')
+    imgrec = mx.recordio.MXIndexedRecordIO(f"../../datasets/{data_name}/train.idx", f"../../datasets/{data_name}/train.rec", 'r')
     s = imgrec.read_idx(0)
     header, _ = mx.recordio.unpack(s)
     print(header.label)

@@ -4,9 +4,11 @@ import efficientnet.tfkeras as efn
 try:
 	from model_scripts import inception_resnet_v1
 	from model_scripts.ArcFaceLayer import ArcFaceLayer
+	from model_scripts import LResNetIR
 except ModuleNotFoundError:
 	from face_recognition.model_scripts import inception_resnet_v1
 	from face_recognition.model_scripts.ArcFaceLayer import ArcFaceLayer
+	from face_recognition.model_scripts import LResNetIR
 
 
 class BatchNormalization(tf.keras.layers.BatchNormalization):
@@ -165,7 +167,7 @@ class ResNet50(MainModel):
 		super(ResNet50, self).__init__(**kwargs)
 
 	def get_model(self, input_shape, weights: str = None, **kwargs):
-		return tf.keras.applications.ResNet50V2(input_shape=input_shape, weights=weights, include_top=False)
+		return LResNetIR.get_symbol(50)
 
 
 class ResNet101(MainModel):
@@ -177,7 +179,7 @@ class ResNet101(MainModel):
 		super(ResNet101, self).__init__(**kwargs)
 
 	def get_model(self, input_shape, weights: str = None, **kwargs):
-		return tf.keras.applications.ResNet101V2(input_shape=input_shape, weights=weights, include_top=False)
+		return LResNetIR.get_symbol(100)
 
 
 class ResNet152(MainModel):
@@ -186,10 +188,10 @@ class ResNet152(MainModel):
 		return "ResNet101"
 
 	def __init__(self, **kwargs):
-		super(ResNet101, self).__init__(**kwargs)
+		super(ResNet152, self).__init__(**kwargs)
 
 	def get_model(self, input_shape, weights: str = None, **kwargs):
-		return tf.keras.applications.ResNet152V2(input_shape=input_shape, weights=weights, include_top=False)
+		return LResNetIR.get_symbol(152)
 
 
 class EfficientNetFamily(MainModel):
