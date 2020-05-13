@@ -104,8 +104,8 @@ class DataBaseManager:
 		with open(self.database_path, "r") as read_file:
 			self.data = json.load(read_file)
 
-	def find_match_in_db(self, output, th: float = 1.0):
-		min_im = (th, -1, "none")
+	def find_match_in_db(self, output, th: float = 1.2):
+		min_im = (1.1, -1, "none")
 		for key in self.data:
 			output_db = tf.convert_to_tensor(self.data[key]["output"])
 			dist = self.distance_metric(output_db, output).numpy()
@@ -158,9 +158,13 @@ class Engine:
 	def update_ASE(self, path, person_id):
 		image = self.detector.load_image(path)
 		faces = self.detector.get_faces_from_image(image)
-		boxes = self.detector.get_boxes_from_faces(faces)
-		face_frames = self.turn_rgb(self.detector.take_faces_from_boxes(image, boxes))
-		face_frames = tf.convert_to_tensor([self.set_face(n) for n in face_frames])
+		boxes, eyes = self.detector.get_boxes_from_faces_with_eyes(faces)
+		image = self.detector.align_image_from_eyes(image, eyes)
+		faces = self.detector.get_faces_from_image(image)
+		boxes, eyes = self.detector.get_boxes_from_faces_with_eyes(faces)
+
+		face_frames = self.detector.take_faces_from_boxes(image, boxes)
+		face_frames = self.turn_rgb([self.set_face(n) for n in face_frames])
 
 		sex = self.ase_predictor.predict_sex(face_frames).tolist()  # {0: "man", 1: "woman"}
 		age = self.ase_predictor.predict_age(face_frames).tolist()  # lambda x: f"{int(x*5)-{int(x*5)+5}}"
@@ -193,18 +197,26 @@ class Engine:
 	def is_deepfake(self, path):
 		image = self.detector.load_image(path)
 		faces = self.detector.get_faces_from_image(image)
-		boxes = self.detector.get_boxes_from_faces(faces)
+		boxes, eyes = self.detector.get_boxes_from_faces_with_eyes(faces)
+		image = self.detector.align_image_from_eyes(image, eyes)
+		faces = self.detector.get_faces_from_image(image)
+		boxes, eyes = self.detector.get_boxes_from_faces_with_eyes(faces)
+
 		face_frames = self.detector.take_faces_from_boxes(image, boxes)
-		face_frames = self.turn_rgb(tf.convert_to_tensor([self.set_face(n) for n in face_frames]))
+		face_frames = self.turn_rgb([self.set_face(n) for n in face_frames])
 
 		return bytes(np.array(tf.cast(tf.multiply(self.df_predictor.predict_deepfake(face_frames), 100), tf.int32).numpy(), dtype=np.float32))
 
 	def get_only_face_and_save(self, path):
 		image = self.detector.load_image(path)
 		faces = self.detector.get_faces_from_image(image)
-		boxes = self.detector.get_boxes_from_faces(faces)
-		face_frames = self.turn_rgb(self.detector.take_faces_from_boxes(image, boxes))
-		face_frames = tf.convert_to_tensor([self.set_face(n) for n in face_frames])
+		boxes, eyes = self.detector.get_boxes_from_faces_with_eyes(faces)
+		image = self.detector.align_image_from_eyes(image, eyes)
+		faces = self.detector.get_faces_from_image(image)
+		boxes, eyes = self.detector.get_boxes_from_faces_with_eyes(faces)
+
+		face_frames = self.detector.take_faces_from_boxes(image, boxes)
+		face_frames = self.turn_rgb([self.set_face(n) for n in face_frames])
 
 		face_id = self.utils.get_faces2display_id()
 		cv2.imwrite(f"faces2display/{face_id}.jpg", Engine.turn_rgb(tf.cast((face_frames * 128.) + 127., tf.uint8))[0].numpy())
@@ -253,11 +265,17 @@ class Engine:
 			try:
 				ret, frame = cap.read()
 
-				faces = self.detector.get_faces_from_image(frame)
-				boxes = self.detector.get_boxes_from_faces(faces)
+				image = frame
+				faces = self.detector.get_faces_from_image(image)
+				boxes, eyes = self.detector.get_boxes_from_faces_with_eyes(faces)
 				if len(boxes) > 0:
-					face_frames = [self.turn_rgb(n) for n in self.detector.take_faces_from_boxes(frame, boxes)]
-					face_frames = tf.convert_to_tensor([self.set_face(n) for n in face_frames])
+					image = self.detector.align_image_from_eyes(image, eyes)
+					faces = self.detector.get_faces_from_image(image)
+					boxes, eyes = self.detector.get_boxes_from_faces_with_eyes(faces)
+
+					face_frames = self.detector.take_faces_from_boxes(image, boxes)
+					face_frames = self.turn_rgb([self.set_face(n) for n in face_frames])
+
 					output = self.get_output(face_frames).numpy()
 
 					colors = []
@@ -268,7 +286,7 @@ class Engine:
 
 						colors.append(color_map[name])
 
-					frame = self.detector.draw_faces_and_labels_on_image(frame, boxes, names, color=colors)
+					frame = self.detector.draw_faces_and_labels_on_image(image, boxes, names, color=colors)
 
 				cv2.imshow('Input', frame)
 
@@ -277,6 +295,7 @@ class Engine:
 					break
 
 			except Exception as e:
+				print(e)
 				if "not valid" in str(e):
 					break
 				continue
@@ -290,9 +309,14 @@ class Engine:
 		print(f"Getting Features for: {path}")
 		image = self.detector.load_image(path)
 		faces = self.detector.get_faces_from_image(image)
-		boxes = self.detector.get_boxes_from_faces(faces)
-		face_frames = self.turn_rgb(self.detector.take_faces_from_boxes(image, boxes))
-		face_frames = tf.convert_to_tensor([self.set_face(n) for n in face_frames])
+		boxes, eyes = self.detector.get_boxes_from_faces_with_eyes(faces)
+		image = self.detector.align_image_from_eyes(image, eyes)
+		faces = self.detector.get_faces_from_image(image)
+		boxes, eyes = self.detector.get_boxes_from_faces_with_eyes(faces)
+
+		face_frames = self.detector.take_faces_from_boxes(image, boxes)
+		face_frames = self.turn_rgb([self.set_face(n) for n in face_frames])
+
 		output = self.get_output(face_frames)[0].numpy()
 
 		if to_bytes:
