@@ -22,12 +22,6 @@
 
 ## Validation Datasets
 
-
-
-### 	Pins Face Recognition
-
-​			Aligned from [here](https://www.kaggle.com/hereisburak/pins-face-recognition), can be downloaded from [here](https://drive.google.com/open?id=1fmCH9K6pL-iDbc_ds8iQUtMV0mGV2Fcu).
-
 ### 	Labeled Faces in the Wild(LFW) 
 
 ​			Aligned to 112x112, can be downloaded from [google drive](https://drive.google.com/file/d/1WO5Meh_yAau00Gm2Rz2Pc0SRldLQYigT/view)
@@ -41,6 +35,18 @@
 ​			Aligned to 112x112, can be downloaded from [google drive](https://drive.google.com/file/d/1-sDn79lTegXRNhFuRnIRsgdU88cBfW6V/view)		
 
   
+
+## Datasets for Applicatons
+
+### 	Pins Face Recognition
+
+​			Aligned from [here](https://www.kaggle.com/hereisburak/pins-face-recognition), can be downloaded from [here](https://drive.google.com/open?id=1fmCH9K6pL-iDbc_ds8iQUtMV0mGV2Fcu).
+
+### IMDB Dataset
+
+​			You can reach to dataset page from [here](https://data.vision.ee.ethz.ch/cvl/rrothe/imdb-wiki/). This dataset used for **_celebrity look like_** application.  
+
+
 
 
 
