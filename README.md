@@ -10,7 +10,7 @@ __Thank you for donations, i am grateful.__
 
 
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]([https://colab.research.google.com/github/aangfanboy/deepface/blob/master/Face_Recognition_Model_Training_%7C%7C_ArcFace.ipynb](https://colab.research.google.com/github/aangfanboy/deepface/blob/master/Face_Recognition_Model_Training_||_ArcFace.ipynb))
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]([https://colab.research.google.com/github/aangfanboy/deepface/blob/master/Face_Recognition_Model_Training_ArcFace.ipynb)
 
 
 
