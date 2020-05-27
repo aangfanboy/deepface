@@ -8,9 +8,11 @@ __For supporters, My Bitcoin/coin.space: 1LUFWnzrGVLdsZ7gnfee87iX6QqSn24Tvr__
 
 __Thank you for donations, i am grateful.__
 
+ 🌟🌟🌟 You can also support me by starring this project 🌟🌟🌟
 
 
-## Face Recognition Models
+
+## Face Recognition Models 🤓
 
 You can use one of my models or train your own face recognition model with the help of Google Colab page linked below. For more information of the title *face recognition*, please visit this [folder](face_recognition/)
 
@@ -26,7 +28,7 @@ You can use one of my models or train your own face recognition model with the h
 
 
 
-## Features
+## Features ✔️
 
 - Facial recognition with database
 - Facial recognition on webcam
@@ -37,7 +39,7 @@ You can use one of my models or train your own face recognition model with the h
 
 
 
-## Features that expected to come in next versions
+## Features that expected to come in next versions 📝
 
 - Online database that every user can add face to common pool
 - Face re-generation with extracted features
@@ -51,9 +53,9 @@ _User gives the face at the right side of page to program, program extract featu
 
 
 
-# Usage
+# Usage 📗
 
-## Python Side
+## Python Side 🐍
 
 - Install libraries with ``` pip install -r requirements.txt ``` 
 - Download a model from [face recognition folder](/face_recognition/), extract it, copy *arcface_final.h5* to *main_app/python_server/arcface_final.h5*
@@ -66,7 +68,7 @@ I highly recommend to use a GPU, you can follow [those](https://www.tensorflow.o
 
 
 
-## Electron Side
+## Electron Side 🔌
 
 - Install electron with npm. Check [this page](https://www.electronjs.org/docs/tutorial/installation) for help.
 - You may need to install dependencies for electron, all can be found in [here](/main_app/electron_scripts/package.json)
