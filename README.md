@@ -10,7 +10,19 @@ __Thank you for donations, i am grateful.__
 
 
 
+## Face Recognition Models
+
+You can use one of my models or train your own face recognition model with the help of Google Colab page linked below. For more information of the title *face recognition*, please visit this [folder](face_recognition/)
+
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/aangfanboy/deepface/blob/master/Face_Recognition_Model_Training_ArcFace.ipynb)
+
+
+
+| Model                                                        | Architecture                                                 | Epochs | LFW Acc | AgeDB Acc | CFP Acc |
+| ------------------------------------------------------------ | ------------------------------------------------------------ | ------ | ------- | --------- | ------- |
+| [A](https://drive.google.com/open?id=1gUuir8ul-_RFCtnavUwSWSeqy9BVN9wF) | [InceptionResNetV1](model_scripts/inception_resnet_v1.py)    | 9      | %99.53  | %95.11    | %93.97  |
+| [B](https://drive.google.com/open?id=1bTV279ZIs6p7kdARqyrqU4Vujtf5_cCF) | [ResNet50V2](https://www.tensorflow.org/api_docs/python/tf/keras/applications/ResNet50V2) | 11     | %99.51  | %94.53    | %93.60  |
+| [C](https://drive.google.com/open?id=1qUtjhrYDMRqc2lRPNBV1ftkbyIPmTJYp) | [L_Resnet50_E_IR](model_scripts/LResNetIR.py)                | 7      | %99.70  | %96.75    | %97.34  |
 
 
 
