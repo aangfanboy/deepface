@@ -7,7 +7,7 @@ mtcnn==0.1.0
 numpy~=1.16.6
 opencv-python==4.2.0.34
 scikit-learn==0.22.1
-tensorflow==2.1.2
+tensorflow==2.9.3
 tensorflow-gpu~=2.2.0
 tqdm==4.45.0
 
